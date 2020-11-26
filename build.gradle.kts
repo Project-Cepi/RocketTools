@@ -29,13 +29,7 @@ dependencies {
     implementation(kotlin("reflect"))
 
     // Compile Minestom into project
-    implementation("com.github.Minestom:Minestom:142b6a6")
-
-    // Implement Klaxon
-    implementation("com.beust:klaxon:5.0.1")
-
-    // OkHttp Client
-    implementation("com.squareup.okhttp3", "okhttp", "4.9.0")
+    implementation("com.github.Minestom:Minestom:3bc90fffd9")
 }
 
 tasks.withType<Test> {
