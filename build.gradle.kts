@@ -29,7 +29,7 @@ dependencies {
     implementation(kotlin("reflect"))
 
     // Compile Minestom into project
-    implementation("com.github.Minestom:Minestom:d61a598c94")
+    implementation("com.github.Minestom:Minestom:62ab0a2007")
 }
 
 tasks.withType<Test> {
