@@ -5,15 +5,9 @@ import net.minestom.server.chat.ChatColor
 import net.minestom.server.command.builder.Command
 import net.minestom.server.command.builder.arguments.ArgumentType
 import net.minestom.server.entity.Player
+import world.cepi.kstom.addSyntax
 
 class RocketCommand : Command("rocket") {
-
-    /*
-    Subcommands:
-    rocket load <filename> -- Loads a not-loaded extension
-    rocket unload <extension name> -- Unloads an extension
-    rocket reload <extension name> -- Reloads an extension
-     */
 
     init {
 
@@ -31,44 +25,44 @@ class RocketCommand : Command("rocket") {
         }
 
 
-        addSyntax({ sender, args ->
+        addSyntax(reload, extensionName) { sender, args ->
             val extension = MinecraftServer.getExtensionManager().getExtension(args.getWord("extension"))
 
             if (extension != null) {
                 MinecraftServer.getExtensionManager().reload(extension.description.name)
                 sender.sendMessage("Extension reloaded!")
             }
-        }, reload, extensionName)
+        }
 
-        addSyntax({ sender, args ->
+        addSyntax(unload, extensionName) { sender, args ->
             val extension = MinecraftServer.getExtensionManager().getExtension(args.getWord("extension"))
             if (extension != null) {
                 MinecraftServer.getExtensionManager().unloadExtension(args.getWord("extension"))
                 sender.sendMessage("Extension unloaded!")
             }
-        }, unload, extensionName)
+        }
 
-        addSyntax({ sender, _ ->
+        addSyntax(list) { sender ->
             val message = MinecraftServer.getExtensionManager().extensions.joinToString { it.description.name }
             sender.sendMessage("(${ChatColor.DARK_GREEN}${MinecraftServer.getExtensionManager().extensions.size}${ChatColor.WHITE}) ${ChatColor.BRIGHT_GREEN}${message}")
-        }, list)
+        }
 
-        addSyntax({ sender, args ->
+        addSyntax(info, extensionName) { sender, args ->
             val extension = MinecraftServer.getExtensionManager().getExtension(args.getWord("extension"))
             if (extension != null) {
                 sender.sendMessage("Name: ${extension.description.name}")
                 sender.sendMessage("Version: ${extension.description.version}")
                 sender.sendMessage("Authors: ${extension.description.authors.joinToString()}")
             }
-        }, info, extensionName)
+        }
 
-        addSyntax({ sender, args ->
+        addSyntax(load, loadURL) { ->
 
-        }, load, loadURL)
+        }
 
-        addSyntax({ sender, args ->
+        addSyntax(load, loadFile) { ->
 
-        }, load, loadFile)
+        }
 
     }
 
