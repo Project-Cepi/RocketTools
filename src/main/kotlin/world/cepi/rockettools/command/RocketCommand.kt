@@ -1,55 +1,77 @@
 package world.cepi.rockettools.command
 
-import com.extollit.misc.RGB.GREEN
 import net.minestom.server.MinecraftServer
 import net.minestom.server.chat.ChatColor
 import net.minestom.server.command.builder.Command
-import net.minestom.server.command.builder.arguments.ArgumentDynamicWord
 import net.minestom.server.command.builder.arguments.ArgumentType
-import net.minestom.server.command.builder.arguments.ArgumentType.DynamicWord
-import net.minestom.server.command.builder.arguments.ArgumentType.Word
 import net.minestom.server.entity.Player
-import javax.annotation.Nullable
-import javax.print.DocFlavor
+import world.cepi.kstom.addSyntax
 
 class RocketCommand : Command("rocket") {
 
-    /*
-    Subcommands:
-    rocket load <filename> -- Loads a not-loaded extension
-    rocket unload <extension name> -- Unloads an extension
-    rocket reload <extension name> -- Reloads an extension
-     */
-
     init {
-        val arg1 = ArgumentType.Word("arg1")
-        val arg2 = ArgumentType.DynamicWord("extension")
-        addSyntax({sender, args ->
-            val player = sender as Player
+
+        val load = ArgumentType.Word("load").from("load")
+        val loadURL = ArgumentType.Word("url").from("url")
+        val loadFile = ArgumentType.DynamicWord("file")
+
+        val reload = ArgumentType.Word("reload").from("reload")
+        val unload = ArgumentType.Word("unload").from("unload")
+        val list = ArgumentType.Word("list").from("list")
+        val info = ArgumentType.Word("info").from("info")
+
+        val extensionName = ArgumentType.DynamicWord("extension").fromRestrictions { name ->
+           MinecraftServer.getExtensionManager().extensions.any { it.description.name == name }
+        }
+
+
+        addSyntax(reload, extensionName) { sender, args ->
+            val extension = MinecraftServer.getExtensionManager().getExtension(args.getWord("extension"))
+
+            if (extension != null) {
+                MinecraftServer.getExtensionManager().reload(extension.description.name)
+                sender.sendMessage("Extension reloaded!")
+            }
+        }
+
+        addSyntax(unload, extensionName) { sender, args ->
             val extension = MinecraftServer.getExtensionManager().getExtension(args.getWord("extension"))
             if (extension != null) {
-                //if statements for commands
-                if (args.getWord("arg1") == "reload") {
-                    //MinecraftServer.getExtensionManager().reload(args.getWord("arg2"))
-                    player.sendMessage("${ChatColor.BRIGHT_GREEN}Extension reloaded!")
-                } else if (args.getWord("arg1") == "unload") {
-                    extension.unload()
-                    player.sendMessage("${ChatColor.RED}Unloaded extension!")
-                } else if (args.getWord("arg1") == "load") {
-                    extension.initialize()
-                    player.sendMessage("${ChatColor.BRIGHT_GREEN}Loaded extension!")
-                }
+                MinecraftServer.getExtensionManager().unloadExtension(args.getWord("extension"))
+                sender.sendMessage("Extension unloaded!")
             }
-        }, arg1, arg2)
-    }
-    @Nullable
-    override fun onDynamicWrite(text: String): Array<String> {
-        var array = mutableListOf<String>()
-        val list = MinecraftServer.getExtensionManager().extensions
-        for (bruh in list) {
-            array.add(bruh.description.name)
         }
-        return array.toTypedArray()
+
+        addSyntax(list) { sender ->
+            val message = MinecraftServer.getExtensionManager().extensions.joinToString { it.description.name }
+            sender.sendMessage("(${ChatColor.DARK_GREEN}${MinecraftServer.getExtensionManager().extensions.size}${ChatColor.WHITE}) ${ChatColor.BRIGHT_GREEN}${message}")
+        }
+
+        addSyntax(info, extensionName) { sender, args ->
+            val extension = MinecraftServer.getExtensionManager().getExtension(args.getWord("extension"))
+            if (extension != null) {
+                sender.sendMessage("Name: ${extension.description.name}")
+                sender.sendMessage("Version: ${extension.description.version}")
+                sender.sendMessage("Authors: ${extension.description.authors.joinToString()}")
+            }
+        }
+
+        addSyntax(load, loadURL) { ->
+
+        }
+
+        addSyntax(load, loadFile) { ->
+
+        }
+
+    }
+
+    override fun onDynamicWrite(text: String): Array<String> {
+
+        val extensionNames = MinecraftServer.getExtensionManager().extensions.map { it.description.name }
+
+        return extensionNames.toTypedArray()
+
     }
 
 }
