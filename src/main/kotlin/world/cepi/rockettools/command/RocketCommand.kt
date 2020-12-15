@@ -26,11 +26,19 @@ class RocketCommand : Command("rocket") {
         val arg2 = ArgumentType.DynamicWord("extension")
         addSyntax({sender, args ->
             val player = sender as Player
-            val extension = MinecraftServer.getExtensionManager().getExtension(args.getWord("arg2"))
+            val extension = MinecraftServer.getExtensionManager().getExtension(args.getWord("extension"))
             if (extension != null) {
-                if (args.getWord("arg1") == "reload")
-                //MinecraftServer.getExtensionManager().reload(args.getWord("arg2"))
-                player.sendMessage("${ChatColor.BRIGHT_GREEN}Extension reloaded!")
+                //if statements for commands
+                if (args.getWord("arg1") == "reload") {
+                    //MinecraftServer.getExtensionManager().reload(args.getWord("arg2"))
+                    player.sendMessage("${ChatColor.BRIGHT_GREEN}Extension reloaded!")
+                } else if (args.getWord("arg1") == "unload") {
+                    extension.unload()
+                    player.sendMessage("${ChatColor.RED}Unloaded extension!")
+                } else if (args.getWord("arg1") == "load") {
+                    extension.initialize()
+                    player.sendMessage("${ChatColor.BRIGHT_GREEN}Loaded extension!")
+                }
             }
         }, arg1, arg2)
     }
