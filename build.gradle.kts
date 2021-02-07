@@ -32,7 +32,7 @@ dependencies {
     implementation("com.github.Minestom:Minestom:4d2dd7d256")
 
     // KStom libraries
-    implementation("com.github.Project-Cepi:KStom:latest")
+    implementation("com.github.Project-Cepi:KStom:47ffd38ceb")
 }
 
 tasks.withType<Test> {

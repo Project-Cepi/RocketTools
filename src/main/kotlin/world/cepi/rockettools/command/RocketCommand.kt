@@ -4,8 +4,7 @@ import net.minestom.server.MinecraftServer
 import net.minestom.server.chat.ChatColor
 import net.minestom.server.command.builder.Command
 import net.minestom.server.command.builder.arguments.ArgumentType
-import net.minestom.server.entity.Player
-import world.cepi.kstom.addSyntax
+import world.cepi.kstom.command.addSyntax
 
 class RocketCommand : Command("rocket") {
 
