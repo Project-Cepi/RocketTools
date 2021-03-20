@@ -33,7 +33,7 @@ class RocketCommand : Command("rocket") {
 
             if (extension != null) {
                 MinecraftServer.getExtensionManager().reload(extension.description.name)
-                sender.sendMessage(Component.text("Extension reloaded!"))
+                sender.sendMessage(Component.text("Extension ${extension.description.name} reloaded!"))
             }
         }
 
@@ -41,7 +41,7 @@ class RocketCommand : Command("rocket") {
             val extension = MinecraftServer.getExtensionManager().getExtension(args.get(extensionName))
             if (extension != null) {
                 MinecraftServer.getExtensionManager().unloadExtension(args.get(extensionName))
-                sender.sendMessage(Component.text("Extension unloaded!"))
+                sender.sendMessage(Component.text("Extension ${extension.description.name} unloaded!"))
             }
         }
 
@@ -72,7 +72,8 @@ class RocketCommand : Command("rocket") {
             val extension = MinecraftServer.getExtensionManager().getExtension(args.get(extensionName))
             if (extension != null) {
                 sender.sendMessage(
-                    Component.text("Name: ", NamedTextColor.GRAY)
+                    Component.text("- ", NamedTextColor.DARK_GRAY)
+                        .append(Component.text("Name: ", NamedTextColor.GRAY))
                         .append(Component.text(extension.description.name, NamedTextColor.WHITE))
                 )
 
@@ -90,7 +91,19 @@ class RocketCommand : Command("rocket") {
                 if (extension.description.dependents.size != 0)
                     sender.sendMessage(
                         Component.text("Dependencies: ", NamedTextColor.GRAY)
-                            .append(Component.text(extension.description.dependents.joinToString(), NamedTextColor.WHITE))
+                            .let {
+                                it.append(extension.description.dependents
+                                    .map { dependency ->
+                                        Component.text(dependency, NamedTextColor.WHITE)
+                                            .hoverEvent(HoverEvent.showText(Component.text("View info about $dependency", NamedTextColor.GRAY)))
+                                            .clickEvent(ClickEvent.runCommand("/rocket info $dependency"))
+                                    }
+                                    .reduce { acc, textComponent ->
+                                        acc.append(Component.text(",", NamedTextColor.WHITE))
+                                            .append(Component.space())
+                                            .append(textComponent)
+                                    })
+                            }
                     )
             }
         }
