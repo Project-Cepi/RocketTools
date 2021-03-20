@@ -1,7 +1,9 @@
 package world.cepi.rockettools.command
 
+import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.format.NamedTextColor
 import net.minestom.server.MinecraftServer
-import net.minestom.server.chat.ChatColor
+import net.minestom.server.command.CommandSender
 import net.minestom.server.command.builder.Command
 import net.minestom.server.command.builder.arguments.ArgumentType
 import world.cepi.kstom.command.addSyntax
@@ -25,33 +27,40 @@ class RocketCommand : Command("rocket") {
 
 
         addSyntax(reload, extensionName) { sender, args ->
-            val extension = MinecraftServer.getExtensionManager().getExtension(args.getWord("extension"))
+            val extension = MinecraftServer.getExtensionManager().getExtension(args.get(extensionName))
 
             if (extension != null) {
                 MinecraftServer.getExtensionManager().reload(extension.description.name)
-                sender.sendMessage("Extension reloaded!")
+                sender.sendMessage(Component.text("Extension reloaded!"))
             }
         }
 
         addSyntax(unload, extensionName) { sender, args ->
-            val extension = MinecraftServer.getExtensionManager().getExtension(args.getWord("extension"))
+            val extension = MinecraftServer.getExtensionManager().getExtension(args.get(extensionName))
             if (extension != null) {
-                MinecraftServer.getExtensionManager().unloadExtension(args.getWord("extension"))
-                sender.sendMessage("Extension unloaded!")
+                MinecraftServer.getExtensionManager().unloadExtension(args.get(extensionName))
+                sender.sendMessage(Component.text("Extension unloaded!"))
             }
         }
 
         addSyntax(list) { sender ->
             val message = MinecraftServer.getExtensionManager().extensions.joinToString { it.description.name }
-            sender.sendMessage("(${ChatColor.DARK_GREEN}${MinecraftServer.getExtensionManager().extensions.size}${ChatColor.WHITE}) ${ChatColor.BRIGHT_GREEN}${message}")
+            sender.sendMessage(
+                Component.text("(", NamedTextColor.WHITE)
+                    .append(Component.text(MinecraftServer.getExtensionManager().extensions.size, NamedTextColor.DARK_GREEN))
+                    .append(Component.text(")", NamedTextColor.WHITE))
+                    // End of prefix.
+                    .append(Component.space())
+                    .append(Component.text(message, NamedTextColor.GREEN))
+            )
         }
 
         addSyntax(info, extensionName) { sender, args ->
-            val extension = MinecraftServer.getExtensionManager().getExtension(args.getWord("extension"))
+            val extension = MinecraftServer.getExtensionManager().getExtension(args.get(extensionName))
             if (extension != null) {
-                sender.sendMessage("Name: ${extension.description.name}")
-                sender.sendMessage("Version: ${extension.description.version}")
-                sender.sendMessage("Authors: ${extension.description.authors.joinToString()}")
+                sender.sendMessage(Component.text("Name: ${extension.description.name}"))
+                sender.sendMessage(Component.text("Version: ${extension.description.version}"))
+                sender.sendMessage(Component.text("Authors: ${extension.description.authors.joinToString()}"))
             }
         }
 
@@ -65,7 +74,7 @@ class RocketCommand : Command("rocket") {
 
     }
 
-    override fun onDynamicWrite(text: String): Array<String> {
+    override fun onDynamicWrite(sender: CommandSender, text: String): Array<out String?> {
 
         val extensionNames = MinecraftServer.getExtensionManager().extensions.map { it.description.name }
 
