@@ -50,9 +50,6 @@ dependencies {
 
     // Use mworlza's canvas
     implementation("com.github.mworzala:canvas:bb1772580e")
-
-    // Add Kepi
-    compileOnly("com.github.Project-Cepi:Kepi:fdefc6a912")
 }
 
 tasks.withType<Test> {
