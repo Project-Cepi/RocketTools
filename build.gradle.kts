@@ -67,7 +67,7 @@ configurations {
 
 tasks {
     named<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar>("shadowJar") {
-        archiveBaseName.set("mob")
+        archiveBaseName.set("rocket")
         mergeServiceFiles()
         minimize()
     }
