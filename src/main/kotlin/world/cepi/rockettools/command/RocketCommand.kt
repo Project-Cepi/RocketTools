@@ -1,6 +1,8 @@
 package world.cepi.rockettools.command
 
 import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.event.ClickEvent
+import net.kyori.adventure.text.event.HoverEvent
 import net.kyori.adventure.text.format.NamedTextColor
 import net.minestom.server.MinecraftServer
 import net.minestom.server.command.CommandSender
@@ -44,23 +46,52 @@ class RocketCommand : Command("rocket") {
         }
 
         addSyntax(list) { sender ->
-            val message = MinecraftServer.getExtensionManager().extensions.joinToString { it.description.name }
             sender.sendMessage(
                 Component.text("(", NamedTextColor.WHITE)
                     .append(Component.text(MinecraftServer.getExtensionManager().extensions.size, NamedTextColor.DARK_GREEN))
                     .append(Component.text(")", NamedTextColor.WHITE))
                     // End of prefix.
                     .append(Component.space())
-                    .append(Component.text(message, NamedTextColor.GREEN))
+                    .let {
+                        it.append(MinecraftServer.getExtensionManager().extensions
+                            .map {
+                                Component.text(it.description.name, NamedTextColor.GREEN)
+                                    .hoverEvent(HoverEvent.showText(Component.text("View info about ${it.description.name}", NamedTextColor.GRAY)))
+                                    .clickEvent(ClickEvent.runCommand("/rocket info ${it.description.name}"))
+                            }
+                            .reduce { acc, textComponent ->
+                                acc.append(Component.text(",", NamedTextColor.GREEN))
+                                    .append(Component.space())
+                                    .append(textComponent)
+                            })
+                    }
             )
         }
 
         addSyntax(info, extensionName) { sender, args ->
             val extension = MinecraftServer.getExtensionManager().getExtension(args.get(extensionName))
             if (extension != null) {
-                sender.sendMessage(Component.text("Name: ${extension.description.name}"))
-                sender.sendMessage(Component.text("Version: ${extension.description.version}"))
-                sender.sendMessage(Component.text("Authors: ${extension.description.authors.joinToString()}"))
+                sender.sendMessage(
+                    Component.text("Name: ", NamedTextColor.GRAY)
+                        .append(Component.text(extension.description.name, NamedTextColor.WHITE))
+                )
+
+                sender.sendMessage(
+                    Component.text("Version: ", NamedTextColor.GRAY)
+                        .append(Component.text(extension.description.version, NamedTextColor.WHITE))
+                )
+
+                if (extension.description.authors.size != 0)
+                    sender.sendMessage(
+                        Component.text("Authors: ", NamedTextColor.GRAY)
+                            .append(Component.text(extension.description.authors.joinToString(), NamedTextColor.WHITE))
+                    )
+
+                if (extension.description.dependents.size != 0)
+                    sender.sendMessage(
+                        Component.text("Dependencies: ", NamedTextColor.GRAY)
+                            .append(Component.text(extension.description.dependents.joinToString(), NamedTextColor.WHITE))
+                    )
             }
         }
 
