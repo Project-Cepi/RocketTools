@@ -8,11 +8,12 @@ class RocketTools : Extension() {
 
     override fun initialize() {
 
-        MinecraftServer.getCommandManager().register(RocketCommand())
+        MinecraftServer.getCommandManager().register(RocketCommand)
         logger.info("[RocketTools] has been enabled!")
     }
 
     override fun terminate() {
+        MinecraftServer.getCommandManager().unregister(RocketCommand)
         logger.info("[RocketTools] has been disabled!")
     }
 

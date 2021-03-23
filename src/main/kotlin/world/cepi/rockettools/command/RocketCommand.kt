@@ -10,7 +10,7 @@ import net.minestom.server.command.builder.Command
 import net.minestom.server.command.builder.arguments.ArgumentType
 import world.cepi.kstom.command.addSyntax
 
-class RocketCommand : Command("rocket") {
+object RocketCommand : Command("rocket") {
 
     init {
 
