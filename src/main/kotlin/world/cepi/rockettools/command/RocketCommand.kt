@@ -32,16 +32,25 @@ object RocketCommand : Command("rocket") {
             val extension = MinecraftServer.getExtensionManager().getExtension(args.get(extensionName))
 
             if (extension != null) {
+                sender.sendMessage(Component.text("Reloading extension ${extension.description.name}..."))
+
                 MinecraftServer.getExtensionManager().reload(extension.description.name)
+
                 sender.sendMessage(Component.text("Extension ${extension.description.name} reloaded!"))
             }
         }
 
         addSyntax(unload, extensionName) { sender, args ->
+
             val extension = MinecraftServer.getExtensionManager().getExtension(args.get(extensionName))
             if (extension != null) {
+
+                sender.sendMessage(Component.text("Unloading extension ${extension.description.name}..."))
+
                 MinecraftServer.getExtensionManager().unloadExtension(args.get(extensionName))
+
                 sender.sendMessage(Component.text("Extension ${extension.description.name} unloaded!"))
+
             }
         }
 
