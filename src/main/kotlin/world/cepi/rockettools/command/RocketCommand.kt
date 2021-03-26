@@ -24,7 +24,7 @@ object RocketCommand : Command("rocket") {
         val info = ArgumentType.Word("info").from("info")
 
         val extensionName = ArgumentType.DynamicWord("extension").fromRestrictions { name ->
-           MinecraftServer.getExtensionManager().extensions.any { it.description.name == name }
+           MinecraftServer.getExtensionManager().extensions.any { it.origin.name == name }
         }
 
 
@@ -32,11 +32,11 @@ object RocketCommand : Command("rocket") {
             val extension = MinecraftServer.getExtensionManager().getExtension(args.get(extensionName))
 
             if (extension != null) {
-                sender.sendMessage(Component.text("Reloading extension ${extension.description.name}..."))
+                sender.sendMessage(Component.text("Reloading extension ${extension.origin.name}..."))
 
-                MinecraftServer.getExtensionManager().reload(extension.description.name)
+                MinecraftServer.getExtensionManager().reload(extension.origin.name)
 
-                sender.sendMessage(Component.text("Extension ${extension.description.name} reloaded!"))
+                sender.sendMessage(Component.text("Extension ${extension.origin.name} reloaded!"))
             }
         }
 
@@ -45,11 +45,11 @@ object RocketCommand : Command("rocket") {
             val extension = MinecraftServer.getExtensionManager().getExtension(args.get(extensionName))
             if (extension != null) {
 
-                sender.sendMessage(Component.text("Unloading extension ${extension.description.name}..."))
+                sender.sendMessage(Component.text("Unloading extension ${extension.origin.name}..."))
 
                 MinecraftServer.getExtensionManager().unloadExtension(args.get(extensionName))
 
-                sender.sendMessage(Component.text("Extension ${extension.description.name} unloaded!"))
+                sender.sendMessage(Component.text("Extension ${extension.origin.name} unloaded!"))
 
             }
         }
@@ -64,9 +64,9 @@ object RocketCommand : Command("rocket") {
                     .let {
                         it.append(MinecraftServer.getExtensionManager().extensions
                             .map {
-                                Component.text(it.description.name, NamedTextColor.GREEN)
-                                    .hoverEvent(HoverEvent.showText(Component.text("View info about ${it.description.name}", NamedTextColor.GRAY)))
-                                    .clickEvent(ClickEvent.runCommand("/rocket info ${it.description.name}"))
+                                Component.text(it.origin.name, NamedTextColor.GREEN)
+                                    .hoverEvent(HoverEvent.showText(Component.text("View info about ${it.origin.name}", NamedTextColor.GRAY)))
+                                    .clickEvent(ClickEvent.runCommand("/rocket info ${it.origin.name}"))
                             }
                             .reduce { acc, textComponent ->
                                 acc.append(Component.text(",", NamedTextColor.GREEN))
@@ -83,25 +83,43 @@ object RocketCommand : Command("rocket") {
                 sender.sendMessage(
                     Component.text("- ", NamedTextColor.DARK_GRAY)
                         .append(Component.text("Name: ", NamedTextColor.GRAY))
-                        .append(Component.text(extension.description.name, NamedTextColor.WHITE))
+                        .append(Component.text(extension.origin.name, NamedTextColor.WHITE))
                 )
 
                 sender.sendMessage(
                     Component.text("Version: ", NamedTextColor.GRAY)
-                        .append(Component.text(extension.description.version, NamedTextColor.WHITE))
+                        .append(Component.text(extension.origin.version, NamedTextColor.WHITE))
                 )
 
-                if (extension.description.authors.size != 0)
+                if (extension.origin.authors.isNotEmpty())
                     sender.sendMessage(
                         Component.text("Authors: ", NamedTextColor.GRAY)
-                            .append(Component.text(extension.description.authors.joinToString(), NamedTextColor.WHITE))
+                            .append(Component.text(extension.origin.authors.joinToString(), NamedTextColor.WHITE))
                     )
 
-                if (extension.description.dependents.size != 0)
+                if (extension.origin.dependencies.isNotEmpty())
                     sender.sendMessage(
                         Component.text("Dependencies: ", NamedTextColor.GRAY)
                             .let {
-                                it.append(extension.description.dependents
+                                it.append(extension.origin.dependencies
+                                    .map { dependency ->
+                                        Component.text(dependency, NamedTextColor.WHITE)
+                                            .hoverEvent(HoverEvent.showText(Component.text("View info about $dependency", NamedTextColor.GRAY)))
+                                            .clickEvent(ClickEvent.runCommand("/rocket info $dependency"))
+                                    }
+                                    .reduce { acc, textComponent ->
+                                        acc.append(Component.text(",", NamedTextColor.WHITE))
+                                            .append(Component.space())
+                                            .append(textComponent)
+                                    })
+                            }
+                    )
+
+                if (extension.dependents.isNotEmpty())
+                    sender.sendMessage(
+                        Component.text("Dependents: ", NamedTextColor.GRAY)
+                            .let {
+                                it.append(extension.dependents
                                     .map { dependency ->
                                         Component.text(dependency, NamedTextColor.WHITE)
                                             .hoverEvent(HoverEvent.showText(Component.text("View info about $dependency", NamedTextColor.GRAY)))
@@ -129,7 +147,7 @@ object RocketCommand : Command("rocket") {
 
     override fun onDynamicWrite(sender: CommandSender, text: String): Array<out String?> {
 
-        val extensionNames = MinecraftServer.getExtensionManager().extensions.map { it.description.name }
+        val extensionNames = MinecraftServer.getExtensionManager().extensions.map { it.origin.name }
 
         return extensionNames.toTypedArray()
 
