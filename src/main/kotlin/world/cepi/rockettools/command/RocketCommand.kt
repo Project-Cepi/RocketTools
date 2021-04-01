@@ -9,19 +9,20 @@ import net.minestom.server.command.CommandSender
 import net.minestom.server.command.builder.Command
 import net.minestom.server.command.builder.arguments.ArgumentType
 import world.cepi.kstom.command.addSyntax
+import world.cepi.kstom.command.arguments.asSubcommand
 
 object RocketCommand : Command("rocket") {
 
     init {
 
-        val load = ArgumentType.Word("load").from("load")
-        val loadURL = ArgumentType.Word("url").from("url")
+        val load = "load".asSubcommand()
+        val loadURL = "url".asSubcommand()
         val loadFile = ArgumentType.DynamicWord("file")
 
-        val reload = ArgumentType.Word("reload").from("reload")
-        val unload = ArgumentType.Word("unload").from("unload")
-        val list = ArgumentType.Word("list").from("list")
-        val info = ArgumentType.Word("info").from("info")
+        val reload = "reload".asSubcommand()
+        val unload = "unload".asSubcommand()
+        val list = "list".asSubcommand()
+        val info = "info".asSubcommand()
 
         val extensionName = ArgumentType.DynamicWord("extension").fromRestrictions { name ->
            MinecraftServer.getExtensionManager().extensions.any { it.origin.name == name }
@@ -61,8 +62,8 @@ object RocketCommand : Command("rocket") {
                     .append(Component.text(")", NamedTextColor.WHITE))
                     // End of prefix.
                     .append(Component.space())
-                    .let {
-                        it.append(MinecraftServer.getExtensionManager().extensions
+                    .let { component ->
+                        component.append(MinecraftServer.getExtensionManager().extensions
                             .map {
                                 Component.text(it.origin.name, NamedTextColor.GREEN)
                                     .hoverEvent(HoverEvent.showText(Component.text("View info about ${it.origin.name}", NamedTextColor.GRAY)))
