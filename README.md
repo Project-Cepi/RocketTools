@@ -1,2 +1,2 @@
-# ExampleExtension
- An example extension for Minestom
+# RocketTools
+Extension manager for Minestom
