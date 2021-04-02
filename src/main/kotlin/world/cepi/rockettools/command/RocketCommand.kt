@@ -13,6 +13,12 @@ import world.cepi.kstom.command.arguments.asSubcommand
 
 object RocketCommand : Command("rocket") {
 
+    fun generateAmountPrefix(inside: NamedTextColor, outside: NamedTextColor, amount: Int): Component {
+        return Component.text("(", outside)
+            .append(Component.text(amount, inside))
+            .append(Component.text(")", outside))
+    }
+
     init {
 
         val load = "load".asSubcommand()
@@ -57,10 +63,7 @@ object RocketCommand : Command("rocket") {
 
         addSyntax(list) { sender ->
             sender.sendMessage(
-                Component.text("(", NamedTextColor.WHITE)
-                    .append(Component.text(MinecraftServer.getExtensionManager().extensions.size, NamedTextColor.DARK_GREEN))
-                    .append(Component.text(")", NamedTextColor.WHITE))
-                    // End of prefix.
+                generateAmountPrefix(NamedTextColor.DARK_GREEN, NamedTextColor.WHITE, MinecraftServer.getExtensionManager().extensions.size)
                     .append(Component.space())
                     .let { component ->
                         component.append(MinecraftServer.getExtensionManager().extensions
@@ -95,12 +98,16 @@ object RocketCommand : Command("rocket") {
                 if (extension.origin.authors.isNotEmpty())
                     sender.sendMessage(
                         Component.text("Authors: ", NamedTextColor.GRAY)
+                            .append(generateAmountPrefix(NamedTextColor.GRAY, NamedTextColor.DARK_GRAY, extension.origin.authors.size))
+                            .append(Component.space())
                             .append(Component.text(extension.origin.authors.joinToString(), NamedTextColor.WHITE))
                     )
 
                 if (extension.origin.dependencies.isNotEmpty())
                     sender.sendMessage(
                         Component.text("Dependencies: ", NamedTextColor.GRAY)
+                            .append(generateAmountPrefix(NamedTextColor.GRAY, NamedTextColor.DARK_GRAY, extension.origin.dependencies.size))
+                            .append(Component.space())
                             .let {
                                 it.append(extension.origin.dependencies
                                     .map { dependency ->
@@ -119,6 +126,8 @@ object RocketCommand : Command("rocket") {
                 if (extension.dependents.isNotEmpty())
                     sender.sendMessage(
                         Component.text("Dependents: ", NamedTextColor.GRAY)
+                            .append(generateAmountPrefix(NamedTextColor.GRAY, NamedTextColor.DARK_GRAY, extension.dependents.size))
+                            .append(Component.space())
                             .let {
                                 it.append(extension.dependents
                                     .map { dependency ->
