@@ -7,7 +7,6 @@ plugins {
     id("org.jetbrains.dokka") version "1.4.30"
     kotlin("plugin.serialization") version "1.4.21"
     `maven-publish`
-    maven
 
     // Apply the application plugin to add support for building a jar
     java
