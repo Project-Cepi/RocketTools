@@ -8,6 +8,7 @@ import net.minestom.server.MinecraftServer
 import net.minestom.server.command.CommandSender
 import net.minestom.server.command.builder.Command
 import net.minestom.server.command.builder.arguments.ArgumentType
+import net.minestom.server.command.builder.exception.ArgumentSyntaxException
 import world.cepi.kstom.command.addSyntax
 import world.cepi.kstom.command.arguments.asSubcommand
 
@@ -23,42 +24,41 @@ object RocketCommand : Command("rocket") {
 
         val load = "load".asSubcommand()
         val loadURL = "url".asSubcommand()
-        val loadFile = ArgumentType.DynamicWord("file")
+        val loadFile = "file".asSubcommand()
+
+        val url = ArgumentType.String("urlLink")
 
         val reload = "reload".asSubcommand()
         val unload = "unload".asSubcommand()
         val list = "list".asSubcommand()
         val info = "info".asSubcommand()
 
-        val extensionName = ArgumentType.DynamicWord("extension").fromRestrictions { name ->
-           MinecraftServer.getExtensionManager().extensions.any { it.origin.name == name }
+        val extensionArgument = ArgumentType.String("extension").map { extensionName ->
+            MinecraftServer.getExtensionManager().extensions.firstOrNull { it.origin.name == name }
+                ?: throw ArgumentSyntaxException("Extension not found", extensionName, 1)
         }
 
 
-        addSyntax(reload, extensionName) { sender, args ->
-            val extension = MinecraftServer.getExtensionManager().getExtension(args.get(extensionName))
+        addSyntax(reload, extensionArgument) { sender, args ->
+            val extension = args.get(extensionArgument)
 
-            if (extension != null) {
-                sender.sendMessage(Component.text("Reloading extension ${extension.origin.name}..."))
+            sender.sendMessage(Component.text("Reloading extension ${extension.origin.name}..."))
 
-                MinecraftServer.getExtensionManager().reload(extension.origin.name)
+            MinecraftServer.getExtensionManager().reload(extension.origin.name)
 
-                sender.sendMessage(Component.text("Extension ${extension.origin.name} reloaded!"))
-            }
+            sender.sendMessage(Component.text("Extension ${extension.origin.name} reloaded!"))
         }
 
-        addSyntax(unload, extensionName) { sender, args ->
+        addSyntax(unload, extensionArgument) { sender, args ->
 
-            val extension = MinecraftServer.getExtensionManager().getExtension(args.get(extensionName))
-            if (extension != null) {
+            val extension = args.get(extensionArgument)
 
-                sender.sendMessage(Component.text("Unloading extension ${extension.origin.name}..."))
+            sender.sendMessage(Component.text("Unloading extension ${extension.origin.name}..."))
 
-                MinecraftServer.getExtensionManager().unloadExtension(args.get(extensionName))
+            MinecraftServer.getExtensionManager().unloadExtension(extension.origin.name)
 
-                sender.sendMessage(Component.text("Extension ${extension.origin.name} unloaded!"))
+            sender.sendMessage(Component.text("Extension ${extension.origin.name} unloaded!"))
 
-            }
         }
 
         addSyntax(list) { sender ->
@@ -81,68 +81,66 @@ object RocketCommand : Command("rocket") {
             )
         }
 
-        addSyntax(info, extensionName) { sender, args ->
-            val extension = MinecraftServer.getExtensionManager().getExtension(args.get(extensionName))
-            if (extension != null) {
+        addSyntax(info, extensionArgument) { sender, args ->
+            val extension = args.get(extensionArgument)
+            sender.sendMessage(
+                Component.text("- ", NamedTextColor.DARK_GRAY)
+                    .append(Component.text("Name: ", NamedTextColor.GRAY))
+                    .append(Component.text(extension.origin.name, NamedTextColor.WHITE))
+            )
+
+            sender.sendMessage(
+                Component.text("Version: ", NamedTextColor.GRAY)
+                    .append(Component.text(extension.origin.version, NamedTextColor.WHITE))
+            )
+
+            if (extension.origin.authors.isNotEmpty())
                 sender.sendMessage(
-                    Component.text("- ", NamedTextColor.DARK_GRAY)
-                        .append(Component.text("Name: ", NamedTextColor.GRAY))
-                        .append(Component.text(extension.origin.name, NamedTextColor.WHITE))
+                    Component.text("Authors: ", NamedTextColor.GRAY)
+                        .append(generateAmountPrefix(NamedTextColor.GRAY, NamedTextColor.DARK_GRAY, extension.origin.authors.size))
+                        .append(Component.space())
+                        .append(Component.text(extension.origin.authors.joinToString(), NamedTextColor.WHITE))
                 )
 
+            if (extension.origin.dependencies.isNotEmpty())
                 sender.sendMessage(
-                    Component.text("Version: ", NamedTextColor.GRAY)
-                        .append(Component.text(extension.origin.version, NamedTextColor.WHITE))
+                    Component.text("Dependencies: ", NamedTextColor.GRAY)
+                        .append(generateAmountPrefix(NamedTextColor.GRAY, NamedTextColor.DARK_GRAY, extension.origin.dependencies.size))
+                        .append(Component.space())
+                        .let {
+                            it.append(extension.origin.dependencies
+                                .map { dependency ->
+                                    Component.text(dependency, NamedTextColor.WHITE)
+                                        .hoverEvent(HoverEvent.showText(Component.text("View info about $dependency", NamedTextColor.GRAY)))
+                                        .clickEvent(ClickEvent.runCommand("/rocket info $dependency"))
+                                }
+                                .reduce { acc, textComponent ->
+                                    acc.append(Component.text(",", NamedTextColor.WHITE))
+                                        .append(Component.space())
+                                        .append(textComponent)
+                                })
+                        }
                 )
 
-                if (extension.origin.authors.isNotEmpty())
-                    sender.sendMessage(
-                        Component.text("Authors: ", NamedTextColor.GRAY)
-                            .append(generateAmountPrefix(NamedTextColor.GRAY, NamedTextColor.DARK_GRAY, extension.origin.authors.size))
-                            .append(Component.space())
-                            .append(Component.text(extension.origin.authors.joinToString(), NamedTextColor.WHITE))
-                    )
-
-                if (extension.origin.dependencies.isNotEmpty())
-                    sender.sendMessage(
-                        Component.text("Dependencies: ", NamedTextColor.GRAY)
-                            .append(generateAmountPrefix(NamedTextColor.GRAY, NamedTextColor.DARK_GRAY, extension.origin.dependencies.size))
-                            .append(Component.space())
-                            .let {
-                                it.append(extension.origin.dependencies
-                                    .map { dependency ->
-                                        Component.text(dependency, NamedTextColor.WHITE)
-                                            .hoverEvent(HoverEvent.showText(Component.text("View info about $dependency", NamedTextColor.GRAY)))
-                                            .clickEvent(ClickEvent.runCommand("/rocket info $dependency"))
-                                    }
-                                    .reduce { acc, textComponent ->
-                                        acc.append(Component.text(",", NamedTextColor.WHITE))
-                                            .append(Component.space())
-                                            .append(textComponent)
-                                    })
-                            }
-                    )
-
-                if (extension.dependents.isNotEmpty())
-                    sender.sendMessage(
-                        Component.text("Dependents: ", NamedTextColor.GRAY)
-                            .append(generateAmountPrefix(NamedTextColor.GRAY, NamedTextColor.DARK_GRAY, extension.dependents.size))
-                            .append(Component.space())
-                            .let {
-                                it.append(extension.dependents
-                                    .map { dependency ->
-                                        Component.text(dependency, NamedTextColor.WHITE)
-                                            .hoverEvent(HoverEvent.showText(Component.text("View info about $dependency", NamedTextColor.GRAY)))
-                                            .clickEvent(ClickEvent.runCommand("/rocket info $dependency"))
-                                    }
-                                    .reduce { acc, textComponent ->
-                                        acc.append(Component.text(",", NamedTextColor.WHITE))
-                                            .append(Component.space())
-                                            .append(textComponent)
-                                    })
-                            }
-                    )
-            }
+            if (extension.dependents.isNotEmpty())
+                sender.sendMessage(
+                    Component.text("Dependents: ", NamedTextColor.GRAY)
+                        .append(generateAmountPrefix(NamedTextColor.GRAY, NamedTextColor.DARK_GRAY, extension.dependents.size))
+                        .append(Component.space())
+                        .let {
+                            it.append(extension.dependents
+                                .map { dependency ->
+                                    Component.text(dependency, NamedTextColor.WHITE)
+                                        .hoverEvent(HoverEvent.showText(Component.text("View info about $dependency", NamedTextColor.GRAY)))
+                                        .clickEvent(ClickEvent.runCommand("/rocket info $dependency"))
+                                }
+                                .reduce { acc, textComponent ->
+                                    acc.append(Component.text(",", NamedTextColor.WHITE))
+                                        .append(Component.space())
+                                        .append(textComponent)
+                                })
+                        }
+                )
         }
 
         addSyntax(load, loadURL) { ->
