@@ -9,8 +9,12 @@ import net.minestom.server.command.CommandSender
 import net.minestom.server.command.builder.Command
 import net.minestom.server.command.builder.arguments.ArgumentType
 import net.minestom.server.command.builder.exception.ArgumentSyntaxException
+import org.apache.logging.log4j.core.impl.ThrowableFormatOptions
 import world.cepi.kstom.command.addSyntax
 import world.cepi.kstom.command.arguments.asSubcommand
+import java.net.URL
+import java.nio.channels.Channels
+import java.io.FileOutputStream
 
 object RocketCommand : Command("rocket") {
 
@@ -19,14 +23,19 @@ object RocketCommand : Command("rocket") {
             .append(Component.text(amount, inside))
             .append(Component.text(")", outside))
     }
-
     init {
 
-        val load = "load".asSubcommand()
-        val loadURL = "url".asSubcommand()
-        val loadFile = "file".asSubcommand()
+        val download = "download".asSubcommand()
 
-        val url = ArgumentType.String("urlLink")
+        val url = ArgumentType.String("urlLink").map { url ->
+            try {
+                URL(url).toURI()
+                url
+            } catch (e: Exception) {
+                throw ArgumentSyntaxException("URL is invalid", url, 1)
+            }
+        }
+        val jarName = ArgumentType.String("jarName")
 
         val reload = "reload".asSubcommand()
         val unload = "unload".asSubcommand()
@@ -143,12 +152,16 @@ object RocketCommand : Command("rocket") {
                 )
         }
 
-        addSyntax(load, loadURL) { ->
+        @Suppress("BlockingMethodInNonBlockingContext")
+        addSyntax(download, jarName, url) { _, args ->
+            val readableByteChannel = Channels.newChannel(URL(args.get(url)).openStream())
 
-        }
+            val fileOutputStream = FileOutputStream(args.get(jarName))
 
-        addSyntax(load, loadFile) { ->
+            fileOutputStream.channel.transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
 
+            fileOutputStream.close()
+            readableByteChannel.close()
         }
 
     }
