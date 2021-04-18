@@ -12,6 +12,7 @@ import net.minestom.server.command.builder.exception.ArgumentSyntaxException
 import org.apache.logging.log4j.core.impl.ThrowableFormatOptions
 import world.cepi.kstom.command.addSyntax
 import world.cepi.kstom.command.arguments.asSubcommand
+import java.io.File
 import java.net.URL
 import java.nio.channels.Channels
 import java.io.FileOutputStream
@@ -156,7 +157,7 @@ object RocketCommand : Command("rocket") {
         addSyntax(download, jarName, url) { _, args ->
             val readableByteChannel = Channels.newChannel(URL(args.get(url)).openStream())
 
-            val fileOutputStream = FileOutputStream(args.get(jarName))
+            val fileOutputStream = FileOutputStream(File("extensions/" + args.get(jarName) + ".jar"))
 
             fileOutputStream.channel.transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
 
