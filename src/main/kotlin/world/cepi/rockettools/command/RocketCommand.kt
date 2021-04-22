@@ -17,9 +17,9 @@ import java.net.URL
 import java.nio.channels.Channels
 import java.io.FileOutputStream
 
-object RocketCommand : Command("rocket") {
+internal object RocketCommand : Command("rocket") {
 
-    fun generateAmountPrefix(inside: NamedTextColor, outside: NamedTextColor, amount: Int): Component {
+    private fun generateAmountPrefix(inside: NamedTextColor, outside: NamedTextColor, amount: Int): Component {
         return Component.text("(", outside)
             .append(Component.text(amount, inside))
             .append(Component.text(")", outside))
