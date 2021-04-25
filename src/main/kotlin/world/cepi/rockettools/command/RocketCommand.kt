@@ -186,7 +186,14 @@ internal object RocketCommand : Command("rocket") {
 
 }
 
+/**
+ * Downlaods a file from a URL and outputs it to a file.
+ *
+ * @param url The URL to download from
+ * @param file The file to put the URL at
+ */
 fun downloadUrl(url: String, file: File) {
+
     val readableByteChannel = Channels.newChannel(URL(url).openStream())
 
     val fileOutputStream = FileOutputStream(file)
