@@ -12,6 +12,8 @@ import net.minestom.server.command.builder.exception.ArgumentSyntaxException
 import org.apache.logging.log4j.core.impl.ThrowableFormatOptions
 import world.cepi.kstom.command.addSyntax
 import world.cepi.kstom.command.arguments.asSubcommand
+import world.cepi.rockettools.command.RocketCommand.downloadURL
+import world.cepi.rockettools.downloadURL
 import java.io.File
 import java.net.URL
 import java.nio.channels.Channels
@@ -158,7 +160,7 @@ internal object RocketCommand : Command("rocket") {
 
         @Suppress("BlockingMethodInNonBlockingContext")
         addSyntax(download, jarName, url) { _, args ->
-            downloadUrl(args.get(url), File("extensions/" + args.get(jarName) + ".jar"))
+            downloadURL(args.get(url), File("extensions/" + args.get(jarName) + ".jar"))
         }
 
         addSyntax(update, extensionArgument) { _, args ->
@@ -167,7 +169,7 @@ internal object RocketCommand : Command("rocket") {
             if (extension.origin.originalJar == null) return@addSyntax
             if (extension.origin.meta.get(downloadURL)?.asString == null) return@addSyntax
 
-            downloadUrl(
+            downloadURL(
                 extension.origin.meta.get(downloadURL).asString!!,
                 extension.origin.originalJar!!
             )
@@ -183,24 +185,5 @@ internal object RocketCommand : Command("rocket") {
         return extensionNames.toTypedArray()
 
     }
-
-}
-
-/**
- * Downlaods a file from a URL and outputs it to a file.
- *
- * @param url The URL to download from
- * @param file The file to put the URL at
- */
-fun downloadUrl(url: String, file: File) {
-
-    val readableByteChannel = Channels.newChannel(URL(url).openStream())
-
-    val fileOutputStream = FileOutputStream(file)
-
-    fileOutputStream.channel.transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
-
-    fileOutputStream.close()
-    readableByteChannel.close()
 
 }
