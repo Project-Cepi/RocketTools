@@ -19,6 +19,8 @@ import java.io.FileOutputStream
 
 internal object RocketCommand : Command("rocket") {
 
+    const val downloadURL = "downloadURL"
+
     private fun generateAmountPrefix(inside: NamedTextColor, outside: NamedTextColor, amount: Int): Component {
         return Component.text("(", outside)
             .append(Component.text(amount, inside))
@@ -42,6 +44,7 @@ internal object RocketCommand : Command("rocket") {
         val unload = "unload".asSubcommand()
         val list = "list".asSubcommand()
         val info = "info".asSubcommand()
+        val update = "update".asSubcommand()
 
         val extensionArgument = ArgumentType.String("extension").map { extensionName ->
             MinecraftServer.getExtensionManager().extensions.firstOrNull { it.origin.name == name }
@@ -155,14 +158,20 @@ internal object RocketCommand : Command("rocket") {
 
         @Suppress("BlockingMethodInNonBlockingContext")
         addSyntax(download, jarName, url) { _, args ->
-            val readableByteChannel = Channels.newChannel(URL(args.get(url)).openStream())
+            downloadUrl(args.get(url), File("extensions/" + args.get(jarName) + ".jar"))
+        }
 
-            val fileOutputStream = FileOutputStream(File("extensions/" + args.get(jarName) + ".jar"))
+        addSyntax(update, extensionArgument) { _, args ->
+            val extension = args.get(extensionArgument)
 
-            fileOutputStream.channel.transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
+            if (extension.origin.originalJar == null) return@addSyntax
+            if (extension.origin.meta.get(downloadURL)?.asString == null) return@addSyntax
 
-            fileOutputStream.close()
-            readableByteChannel.close()
+            downloadUrl(
+                extension.origin.meta.get(downloadURL).asString!!,
+                extension.origin.originalJar!!
+            )
+
         }
 
     }
@@ -174,5 +183,17 @@ internal object RocketCommand : Command("rocket") {
         return extensionNames.toTypedArray()
 
     }
+
+}
+
+fun downloadUrl(url: String, file: File) {
+    val readableByteChannel = Channels.newChannel(URL(url).openStream())
+
+    val fileOutputStream = FileOutputStream(file)
+
+    fileOutputStream.channel.transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
+
+    fileOutputStream.close()
+    readableByteChannel.close()
 
 }
