@@ -28,6 +28,7 @@ internal object RocketCommand : Command("rocket") {
             .append(Component.text(amount, inside))
             .append(Component.text(")", outside))
     }
+    
     init {
 
         val download = "download".asSubcommand()
