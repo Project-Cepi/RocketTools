@@ -13,12 +13,16 @@ import java.nio.channels.Channels
  */
 fun downloadURL(url: String, file: File) {
 
+    // make a new channel from the url
     val readableByteChannel = Channels.newChannel(URL(url).openStream())
 
+    // create file output
     val fileOutputStream = FileOutputStream(file)
 
+    // zero-buffer copy
     fileOutputStream.channel.transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
 
+    // close the streams
     fileOutputStream.close()
     readableByteChannel.close()
 
