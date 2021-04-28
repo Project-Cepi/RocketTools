@@ -32,6 +32,13 @@ internal object RocketCommand : Command("rocket") {
     init {
 
         val download = "download".asSubcommand()
+        val reload = "reload".asSubcommand()
+        val unload = "unload".asSubcommand()
+        val list = "list".asSubcommand()
+        val info = "info".asSubcommand()
+        val update = "update".asSubcommand()
+
+        val jarName = ArgumentType.String("jarName")
 
         val url = ArgumentType.String("urlLink").map { url ->
             try {
@@ -41,17 +48,18 @@ internal object RocketCommand : Command("rocket") {
                 throw ArgumentSyntaxException("URL is invalid", url, 1)
             }
         }
-        val jarName = ArgumentType.String("jarName")
 
-        val reload = "reload".asSubcommand()
-        val unload = "unload".asSubcommand()
-        val list = "list".asSubcommand()
-        val info = "info".asSubcommand()
-        val update = "update".asSubcommand()
+        url.setCallback { sender, exception ->
+            sender.sendMessage(Component.text(exception.message!!, NamedTextColor.RED))
+        }
 
         val extensionArgument = ArgumentType.String("extension").map { extensionName ->
             MinecraftServer.getExtensionManager().extensions.firstOrNull { it.origin.name == name }
-                ?: throw ArgumentSyntaxException("Extension not found", extensionName, 1)
+                ?: throw ArgumentSyntaxException("Extension $extensionName not found", extensionName, 1)
+        }
+
+        extensionArgument.setCallback { sender, exception ->
+            sender.sendMessage(Component.text(exception.message!!, NamedTextColor.RED))
         }
 
 
