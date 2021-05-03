@@ -9,15 +9,11 @@ import net.minestom.server.command.CommandSender
 import net.minestom.server.command.builder.Command
 import net.minestom.server.command.builder.arguments.ArgumentType
 import net.minestom.server.command.builder.exception.ArgumentSyntaxException
-import org.apache.logging.log4j.core.impl.ThrowableFormatOptions
 import world.cepi.kstom.command.addSyntax
-import world.cepi.kstom.command.arguments.asSubcommand
-import world.cepi.rockettools.command.RocketCommand.downloadURL
+import world.cepi.kstom.command.arguments.literal
 import world.cepi.rockettools.downloadURL
 import java.io.File
 import java.net.URL
-import java.nio.channels.Channels
-import java.io.FileOutputStream
 
 internal object RocketCommand : Command("rocket") {
 
@@ -31,12 +27,12 @@ internal object RocketCommand : Command("rocket") {
 
     init {
 
-        val download = "download".asSubcommand()
-        val reload = "reload".asSubcommand()
-        val unload = "unload".asSubcommand()
-        val list = "list".asSubcommand()
-        val info = "info".asSubcommand()
-        val update = "update".asSubcommand()
+        val download = "download".literal()
+        val reload = "reload".literal()
+        val unload = "unload".literal()
+        val list = "list".literal()
+        val info = "info".literal()
+        val update = "update".literal()
 
         val jarName = ArgumentType.String("jarName")
 
