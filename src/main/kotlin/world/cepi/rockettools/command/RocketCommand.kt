@@ -9,8 +9,11 @@ import net.minestom.server.command.CommandSender
 import net.minestom.server.command.builder.Command
 import net.minestom.server.command.builder.arguments.ArgumentType
 import net.minestom.server.command.builder.exception.ArgumentSyntaxException
+import net.minestom.server.command.builder.suggestion.SuggestionEntry
+import world.cepi.kstom.Manager
 import world.cepi.kstom.command.addSyntax
 import world.cepi.kstom.command.arguments.literal
+import world.cepi.kstom.command.arguments.suggest
 import world.cepi.rockettools.downloadURL
 import java.io.File
 import java.net.URL
@@ -52,6 +55,8 @@ internal object RocketCommand : Command("rocket") {
         val extensionArgument = ArgumentType.String("extension").map { extensionName ->
             MinecraftServer.getExtensionManager().getExtension(extensionName)
                 ?: throw ArgumentSyntaxException("Extension $extensionName not found", extensionName, 1)
+        }.suggest { _, _ ->
+            Manager.extension.extensions.map { it.origin.name }.map { SuggestionEntry(it) }.toMutableList()
         }
 
         extensionArgument.setCallback { sender, exception ->
@@ -64,7 +69,7 @@ internal object RocketCommand : Command("rocket") {
 
             sender.sendMessage(Component.text("Reloading extension ${extension.origin.name}..."))
 
-            MinecraftServer.getExtensionManager().reload(extension.origin.name)
+            Manager.extension.reload(extension.origin.name)
 
             sender.sendMessage(Component.text("Extension ${extension.origin.name} reloaded!"))
         }
@@ -75,7 +80,7 @@ internal object RocketCommand : Command("rocket") {
 
             sender.sendMessage(Component.text("Unloading extension ${extension.origin.name}..."))
 
-            MinecraftServer.getExtensionManager().unloadExtension(extension.origin.name)
+            Manager.extension.unloadExtension(extension.origin.name)
 
             sender.sendMessage(Component.text("Extension ${extension.origin.name} unloaded!"))
 
@@ -180,14 +185,6 @@ internal object RocketCommand : Command("rocket") {
             )
 
         }
-
-    }
-
-    override fun onDynamicWrite(sender: CommandSender, text: String): Array<out String?> {
-
-        val extensionNames = MinecraftServer.getExtensionManager().extensions.map { it.origin.name }
-
-        return extensionNames.toTypedArray()
 
     }
 

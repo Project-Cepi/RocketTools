@@ -2,7 +2,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     // Apply the Kotlin JVM plugin to add support for Kotlin.
-    kotlin("jvm") version "1.4.32"
+    kotlin("jvm") version "1.5.10"
     id("com.github.johnrengelman.shadow") version "7.0.0"
     id("org.jetbrains.dokka") version "1.4.32"
     kotlin("plugin.serialization") version "1.4.21"
@@ -13,16 +13,12 @@ plugins {
 }
 
 repositories {
-    // Use jcenter for resolving dependencies.
-    jcenter()
+    // Use mavenCentral
     mavenCentral()
 
-    // Use mavenCentral
-    maven(url = "https://repo1.maven.org/maven2/")
-    maven(url = "https://repo.spongepowered.org/maven")
-    maven(url = "https://libraries.minecraft.net")
     maven(url = "https://jitpack.io")
-    maven(url = "https://jcenter.bintray.com/")
+    maven(url = "https://repo.spongepowered.org/maven")
+    maven(url = "https://repo.minestom.com/repository/maven-public/")
     maven(url = "https://repo.velocitypowered.com/snapshots/")
 }
 
@@ -40,16 +36,13 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter:5.7.2")
 
     // Compile Minestom into project
-    compileOnly("com.github.Project-Cepi:Minestom:e54f685ff9")
+    compileOnly("com.github.Minestom:Minestom:dd82635c6f")
 
     // Use kotlinx serialization
-    compileOnly("org.jetbrains.kotlinx", "kotlinx-serialization-json", "1.0.1")
+    compileOnly("org.jetbrains.kotlinx", "kotlinx-serialization-json", "1.2.1")
 
     // implement KStom
-    compileOnly("com.github.Project-Cepi:KStom:1ff18b0905")
-
-    // Use mworlza's canvas
-    implementation("com.github.mworzala:canvas:bb1772580e")
+    compileOnly("com.github.Project-Cepi:KStom:813a944c56")
 }
 
 tasks.withType<Test> {

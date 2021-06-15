@@ -1,19 +1,19 @@
 package world.cepi.rockettools
 
-import net.minestom.server.MinecraftServer
 import net.minestom.server.extensions.Extension;
+import world.cepi.kstom.command.register
+import world.cepi.kstom.command.unregister
 import world.cepi.rockettools.command.RocketCommand
 
 class RocketTools : Extension() {
 
     override fun initialize() {
-
-        MinecraftServer.getCommandManager().register(RocketCommand)
+        RocketCommand.register()
         logger.info("[RocketTools] has been enabled!")
     }
 
     override fun terminate() {
-        MinecraftServer.getCommandManager().unregister(RocketCommand)
+        RocketCommand.unregister()
         logger.info("[RocketTools] has been disabled!")
     }
 
