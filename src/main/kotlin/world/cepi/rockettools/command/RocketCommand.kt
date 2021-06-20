@@ -17,6 +17,7 @@ import world.cepi.kstom.command.arguments.suggest
 import world.cepi.rockettools.downloadURL
 import java.io.File
 import java.net.URL
+import java.nio.file.Path
 
 internal object RocketCommand : Command("rocket") {
 
@@ -170,7 +171,7 @@ internal object RocketCommand : Command("rocket") {
 
         @Suppress("BlockingMethodInNonBlockingContext")
         addSyntax(download, jarName, url) { _, args ->
-            downloadURL(args.get(url), File("extensions/" + args.get(jarName) + ".jar"))
+            downloadURL(args.get(url), Path.of("extensions", args.get(jarName) + ".jar"))
         }
 
         addSyntax(update, extensionArgument) { _, args ->
@@ -181,7 +182,7 @@ internal object RocketCommand : Command("rocket") {
 
             downloadURL(
                 extension.origin.meta.get(downloadURL).asString!!,
-                extension.origin.originalJar!!
+                extension.origin.originalJar!!.toPath()
             )
 
         }
