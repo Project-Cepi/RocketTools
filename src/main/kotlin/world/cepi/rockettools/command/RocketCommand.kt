@@ -65,8 +65,8 @@ internal object RocketCommand : Command("rocket") {
         }
 
 
-        addSyntax(reload, extensionArgument) { sender, args ->
-            val extension = args.get(extensionArgument)
+        addSyntax(reload, extensionArgument) {
+            val extension = context.get(extensionArgument)
 
             sender.sendMessage(Component.text("Reloading extension ${extension.origin.name}..."))
 
@@ -75,9 +75,9 @@ internal object RocketCommand : Command("rocket") {
             sender.sendMessage(Component.text("Extension ${extension.origin.name} reloaded!"))
         }
 
-        addSyntax(unload, extensionArgument) { sender, args ->
+        addSyntax(unload, extensionArgument) {
 
-            val extension = args.get(extensionArgument)
+            val extension = context.get(extensionArgument)
 
             sender.sendMessage(Component.text("Unloading extension ${extension.origin.name}..."))
 
@@ -87,7 +87,7 @@ internal object RocketCommand : Command("rocket") {
 
         }
 
-        addSyntax(list) { sender ->
+        addSyntax(list) {
             sender.sendMessage(
                 generateAmountPrefix(NamedTextColor.DARK_GREEN, NamedTextColor.WHITE, MinecraftServer.getExtensionManager().extensions.size)
                     .append(Component.space())
@@ -107,8 +107,8 @@ internal object RocketCommand : Command("rocket") {
             )
         }
 
-        addSyntax(info, extensionArgument) { sender, args ->
-            val extension = args.get(extensionArgument)
+        addSyntax(info, extensionArgument) {
+            val extension = context.get(extensionArgument)
             sender.sendMessage(
                 Component.text("- ", NamedTextColor.DARK_GRAY)
                     .append(Component.text("Name: ", NamedTextColor.GRAY))
@@ -170,12 +170,12 @@ internal object RocketCommand : Command("rocket") {
         }
 
         @Suppress("BlockingMethodInNonBlockingContext")
-        addSyntax(download, jarName, url) { _, args ->
-            downloadURL(args.get(url), Path.of("extensions", args.get(jarName) + ".jar"))
+        addSyntax(download, jarName, url) {
+            downloadURL(context.get(url), Path.of("extensions", context.get(jarName) + ".jar"))
         }
 
-        addSyntax(update, extensionArgument) { _, args ->
-            val extension = args.get(extensionArgument)
+        addSyntax(update, extensionArgument) {
+            val extension = context.get(extensionArgument)
 
             if (extension.origin.originalJar == null) return@addSyntax
             if (extension.origin.meta.get(downloadURL)?.asString == null) return@addSyntax
