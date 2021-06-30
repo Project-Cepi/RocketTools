@@ -56,8 +56,8 @@ internal object RocketCommand : Command("rocket") {
         val extensionArgument = ArgumentType.String("extension").map { extensionName ->
             MinecraftServer.getExtensionManager().getExtension(extensionName)
                 ?: throw ArgumentSyntaxException("Extension $extensionName not found", extensionName, 1)
-        }.suggest { _, _ ->
-            Manager.extension.extensions.map { it.origin.name }.map { SuggestionEntry(it) }.toMutableList()
+        }.suggest {
+            Manager.extension.extensions.map { it.origin.name }
         }
 
         extensionArgument.setCallback { sender, exception ->
