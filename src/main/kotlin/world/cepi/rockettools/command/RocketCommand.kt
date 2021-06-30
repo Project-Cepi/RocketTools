@@ -99,8 +99,7 @@ internal object RocketCommand : Command("rocket") {
                                     .clickEvent(ClickEvent.runCommand("/rocket info ${it.origin.name}"))
                             }
                             .reduce { acc, textComponent ->
-                                acc.append(Component.text(",", NamedTextColor.GREEN))
-                                    .append(Component.space())
+                                acc.append(Component.text(" | ", NamedTextColor.DARK_GREEN))
                                     .append(textComponent)
                             })
                     }
