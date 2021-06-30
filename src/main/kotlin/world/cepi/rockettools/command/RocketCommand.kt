@@ -12,6 +12,7 @@ import net.minestom.server.command.builder.exception.ArgumentSyntaxException
 import net.minestom.server.command.builder.suggestion.SuggestionEntry
 import world.cepi.kstom.Manager
 import world.cepi.kstom.command.addSyntax
+import world.cepi.kstom.command.arguments.SuggestionIgnoreOption
 import world.cepi.kstom.command.arguments.literal
 import world.cepi.kstom.command.arguments.suggest
 import world.cepi.rockettools.downloadURL
@@ -56,7 +57,7 @@ internal object RocketCommand : Command("rocket") {
         val extensionArgument = ArgumentType.String("extension").map { extensionName ->
             MinecraftServer.getExtensionManager().getExtension(extensionName)
                 ?: throw ArgumentSyntaxException("Extension $extensionName not found", extensionName, 1)
-        }.suggest {
+        }.suggest(SuggestionIgnoreOption.IGNORE_CASE) {
             Manager.extension.extensions.map { it.origin.name }
         }
 
