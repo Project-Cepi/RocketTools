@@ -16,6 +16,9 @@ import world.cepi.kstom.command.arguments.SuggestionIgnoreOption
 import world.cepi.kstom.command.arguments.literal
 import world.cepi.kstom.command.arguments.suggest
 import world.cepi.rockettools.downloadURL
+import world.cepi.rockettools.extension.RocketStageCalculator
+import world.cepi.rockettools.messaging.MessageHandler
+import world.cepi.rockettools.messaging.Translations
 import java.io.File
 import java.net.URL
 import java.nio.file.Path
@@ -69,22 +72,22 @@ internal object RocketCommand : Command("rocket") {
         addSyntax(reload, extensionArgument) {
             val extension = context.get(extensionArgument)
 
-            sender.sendMessage(Component.text("Reloading extension ${extension.origin.name}..."))
+            MessageHandler.sendInfoMessage(sender, Translations.reloadProgress, extension.origin.name)
 
             Manager.extension.reload(extension.origin.name)
 
-            sender.sendMessage(Component.text("Extension ${extension.origin.name} reloaded!"))
+            MessageHandler.sendInfoMessage(sender, Translations.reloadFinished, extension.origin.name)
         }
 
         addSyntax(unload, extensionArgument) {
 
             val extension = context.get(extensionArgument)
 
-            sender.sendMessage(Component.text("Unloading extension ${extension.origin.name}..."))
+            MessageHandler.sendInfoMessage(sender, Translations.unloadProgress, extension.origin.name)
 
             Manager.extension.unloadExtension(extension.origin.name)
 
-            sender.sendMessage(Component.text("Extension ${extension.origin.name} unloaded!"))
+            MessageHandler.sendInfoMessage(sender, Translations.unloadFinished, extension.origin.name)
 
         }
 
@@ -95,8 +98,12 @@ internal object RocketCommand : Command("rocket") {
                     .let { component ->
                         component.append(MinecraftServer.getExtensionManager().extensions
                             .map {
-                                Component.text(it.origin.name, NamedTextColor.GREEN)
-                                    .hoverEvent(HoverEvent.showText(Component.text("View info about ${it.origin.name}", NamedTextColor.GRAY)))
+                                Component.text(it.origin.name, RocketStageCalculator.from(it).color)
+                                    .hoverEvent(HoverEvent.showText(
+                                        Component.text("Info about ${it.origin.name}", NamedTextColor.GRAY)
+                                            .append(Component.newline())
+
+                                    ))
                                     .clickEvent(ClickEvent.runCommand("/rocket info ${it.origin.name}"))
                             }
                             .reduce { acc, textComponent ->
@@ -114,63 +121,69 @@ internal object RocketCommand : Command("rocket") {
                 Component.text("- ", NamedTextColor.DARK_GRAY)
                     .append(Component.text("Name: ", NamedTextColor.GRAY))
                     .append(Component.text(extension.origin.name, NamedTextColor.WHITE))
-            )
-
-            sender.sendMessage(
-                Component.text("Version: ", NamedTextColor.GRAY)
+                    .append(Component.newline())
+                    .append(Component.text("Version: ", NamedTextColor.GRAY))
                     .append(Component.text(extension.origin.version, NamedTextColor.WHITE))
+                    .let {
+                        if (extension.origin.authors.isNotEmpty()) {
+                            return@let it.append(Component.text("Authors: ", NamedTextColor.GRAY))
+                                .append(generateAmountPrefix(NamedTextColor.GRAY, NamedTextColor.DARK_GRAY, extension.origin.authors.size))
+                                .append(Component.space())
+                                .append(Component.text(extension.origin.authors.joinToString(), NamedTextColor.WHITE))
+                        }
+
+                        else return@let it
+                    }
+                    .let {
+                        if (extension.origin.dependencies.isNotEmpty()) {
+                            return@let it.append(Component.newline())
+                                .append(Component.text("Dependencies: ", NamedTextColor.GRAY))
+                                .append(generateAmountPrefix(NamedTextColor.GRAY, NamedTextColor.DARK_GRAY, extension.origin.dependencies.size))
+                                .append(Component.space())
+                                .let { let ->
+                                    let.append(extension.origin.dependencies
+                                        .map { dependency ->
+                                            Component.text(dependency, NamedTextColor.WHITE)
+                                                .hoverEvent(HoverEvent.showText(Component.text("View info about $dependency", NamedTextColor.GRAY)))
+                                                .clickEvent(ClickEvent.runCommand("/rocket info $dependency"))
+                                        }
+                                        .reduce { acc, textComponent ->
+                                            acc.append(Component.text(",", NamedTextColor.WHITE))
+                                                .append(Component.space())
+                                                .append(textComponent)
+                                        })
+                                }
+                        }
+
+                        return@let it
+                    }
+                    .let {
+
+                        if (extension.dependents.isNotEmpty()) {
+                            return@let it.append(Component.newline())
+                                .append(Component.text("Dependents: ", NamedTextColor.GRAY))
+                                .append(generateAmountPrefix(NamedTextColor.GRAY, NamedTextColor.DARK_GRAY, extension.dependents.size))
+                                .append(Component.space())
+                                .let { let ->
+                                    let.append(extension.dependents
+                                        .map { dependency ->
+                                            Component.text(dependency, NamedTextColor.WHITE)
+                                                .hoverEvent(HoverEvent.showText(Component.text("View info about $dependency", NamedTextColor.GRAY)))
+                                                .clickEvent(ClickEvent.runCommand("/rocket info $dependency"))
+                                        }
+                                        .reduce { acc, textComponent ->
+                                            acc.append(Component.text(",", NamedTextColor.WHITE))
+                                                .append(Component.space())
+                                                .append(textComponent)
+                                        })
+                                }
+                        }
+
+                        return@let it
+                    }
             )
-
-            if (extension.origin.authors.isNotEmpty())
-                sender.sendMessage(
-                    Component.text("Authors: ", NamedTextColor.GRAY)
-                        .append(generateAmountPrefix(NamedTextColor.GRAY, NamedTextColor.DARK_GRAY, extension.origin.authors.size))
-                        .append(Component.space())
-                        .append(Component.text(extension.origin.authors.joinToString(), NamedTextColor.WHITE))
-                )
-
-            if (extension.origin.dependencies.isNotEmpty())
-                sender.sendMessage(
-                    Component.text("Dependencies: ", NamedTextColor.GRAY)
-                        .append(generateAmountPrefix(NamedTextColor.GRAY, NamedTextColor.DARK_GRAY, extension.origin.dependencies.size))
-                        .append(Component.space())
-                        .let {
-                            it.append(extension.origin.dependencies
-                                .map { dependency ->
-                                    Component.text(dependency, NamedTextColor.WHITE)
-                                        .hoverEvent(HoverEvent.showText(Component.text("View info about $dependency", NamedTextColor.GRAY)))
-                                        .clickEvent(ClickEvent.runCommand("/rocket info $dependency"))
-                                }
-                                .reduce { acc, textComponent ->
-                                    acc.append(Component.text(",", NamedTextColor.WHITE))
-                                        .append(Component.space())
-                                        .append(textComponent)
-                                })
-                        }
-                )
-
-            if (extension.dependents.isNotEmpty())
-                sender.sendMessage(
-                    Component.text("Dependents: ", NamedTextColor.GRAY)
-                        .append(generateAmountPrefix(NamedTextColor.GRAY, NamedTextColor.DARK_GRAY, extension.dependents.size))
-                        .append(Component.space())
-                        .let {
-                            it.append(extension.dependents
-                                .map { dependency ->
-                                    Component.text(dependency, NamedTextColor.WHITE)
-                                        .hoverEvent(HoverEvent.showText(Component.text("View info about $dependency", NamedTextColor.GRAY)))
-                                        .clickEvent(ClickEvent.runCommand("/rocket info $dependency"))
-                                }
-                                .reduce { acc, textComponent ->
-                                    acc.append(Component.text(",", NamedTextColor.WHITE))
-                                        .append(Component.space())
-                                        .append(textComponent)
-                                })
-                        }
-                )
         }
 
-        @Suppress("BlockingMethodInNonBlockingContext")
         addSyntax(download, jarName, url) {
             downloadURL(context.get(url), Path.of("extensions", context.get(jarName) + ".jar"))
         }
