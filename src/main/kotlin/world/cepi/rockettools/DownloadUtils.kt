@@ -9,7 +9,7 @@ import kotlin.io.path.copyTo
 import kotlin.io.path.outputStream
 
 /**
- * Downlaods a file from a URL and outputs it to a file.
+ * Downloads a file from a URL and outputs it to a file.
  *
  * @param url The URL to download from
  * @param file The file to put the URL at
