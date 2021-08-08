@@ -11,10 +11,12 @@ import net.minestom.server.command.builder.arguments.ArgumentType
 import net.minestom.server.command.builder.exception.ArgumentSyntaxException
 import net.minestom.server.command.builder.suggestion.SuggestionEntry
 import world.cepi.kstom.Manager
+import world.cepi.kstom.command.addSubcommands
 import world.cepi.kstom.command.addSyntax
 import world.cepi.kstom.command.arguments.SuggestionIgnoreOption
 import world.cepi.kstom.command.arguments.literal
 import world.cepi.kstom.command.arguments.suggest
+import world.cepi.rockettools.command.subcommands.RocketUpdateSubcommand
 import world.cepi.rockettools.downloadURL
 import world.cepi.rockettools.extension.RocketStageCalculator
 import world.cepi.rockettools.messaging.MessageHandler
@@ -33,6 +35,13 @@ internal object RocketCommand : Command("rocket") {
             .append(Component.text(")", outside))
     }
 
+    val extensionArgument = ArgumentType.String("extension").map { extensionName ->
+        MinecraftServer.getExtensionManager().getExtension(extensionName)
+            ?: throw ArgumentSyntaxException("Extension $extensionName not found", extensionName, 1)
+    }.suggest(SuggestionIgnoreOption.IGNORE_CASE) {
+        Manager.extension.extensions.map { it.origin.name }
+    }
+
     init {
 
         val download = "download".literal()
@@ -40,7 +49,6 @@ internal object RocketCommand : Command("rocket") {
         val unload = "unload".literal()
         val list = "list".literal()
         val info = "info".literal()
-        val update = "update".literal()
 
         val jarName = ArgumentType.String("jarName")
 
@@ -55,13 +63,6 @@ internal object RocketCommand : Command("rocket") {
 
         url.setCallback { sender, exception ->
             sender.sendMessage(Component.text(exception.message!!, NamedTextColor.RED))
-        }
-
-        val extensionArgument = ArgumentType.String("extension").map { extensionName ->
-            MinecraftServer.getExtensionManager().getExtension(extensionName)
-                ?: throw ArgumentSyntaxException("Extension $extensionName not found", extensionName, 1)
-        }.suggest(SuggestionIgnoreOption.IGNORE_CASE) {
-            Manager.extension.extensions.map { it.origin.name }
         }
 
         extensionArgument.setCallback { sender, exception ->
@@ -188,18 +189,7 @@ internal object RocketCommand : Command("rocket") {
             downloadURL(context.get(url), Path.of("extensions", context.get(jarName) + ".jar"))
         }
 
-        addSyntax(update, extensionArgument) {
-            val extension = context.get(extensionArgument)
-
-            if (extension.origin.originalJar == null) return@addSyntax
-            if (extension.origin.meta.get(downloadURL)?.asString == null) return@addSyntax
-
-            downloadURL(
-                extension.origin.meta.get(downloadURL).asString!!,
-                extension.origin.originalJar!!.toPath()
-            )
-
-        }
+        addSubcommands(RocketUpdateSubcommand)
 
     }
 

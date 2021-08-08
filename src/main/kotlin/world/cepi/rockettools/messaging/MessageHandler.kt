@@ -20,4 +20,14 @@ object MessageHandler {
         audience, Component.text(String.format(translationString, *args))
     )
 
+    private fun sendErrorMessage(audience: Audience, component: Component) =
+        audience.sendMessage(Component.text(failSymbol, NamedTextColor.RED)
+            .append(Component.text(" / ", TextColor.color(125, 125, 125)))
+            .append(component.color(NamedTextColor.GRAY))
+        )
+
+    fun sendErrorMessage(audience: Audience, translationString: String, vararg args: Any?) = sendErrorMessage(
+        audience, Component.text(String.format(translationString, *args))
+    )
+
 }

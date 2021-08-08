@@ -6,4 +6,9 @@ object Translations {
 
     const val unloadProgress = "Unloading extension %s..."
     const val unloadFinished = "Extension %s unloaded!"
+
+    const val updateSuccess = "Extension %s updated successfully!"
+    const val updateFail = "Extension %s failed to update."
+
+    const val updateAll = "Finished updating all extensions!"
 }
