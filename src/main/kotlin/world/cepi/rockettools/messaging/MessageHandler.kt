@@ -23,7 +23,7 @@ object MessageHandler {
     private fun sendErrorMessage(audience: Audience, component: Component) =
         audience.sendMessage(Component.text(failSymbol, NamedTextColor.RED)
             .append(Component.text(" / ", TextColor.color(125, 125, 125)))
-            .append(component.color(NamedTextColor.GRAY))
+            .append(component.color(TextColor.color(171, 150, 150)))
         )
 
     fun sendErrorMessage(audience: Audience, translationString: String, vararg args: Any?) = sendErrorMessage(

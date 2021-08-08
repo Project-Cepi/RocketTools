@@ -40,6 +40,9 @@ dependencies {
     // Use kotlinx serialization
     compileOnly("org.jetbrains.kotlinx", "kotlinx-serialization-json", "1.2.1")
 
+    // Add support for kotlinx courotines
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.1")
+
     // implement KStom
     compileOnly("com.github.Project-Cepi:KStom:0527eabb7f")
 }

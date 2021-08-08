@@ -1,5 +1,6 @@
 package world.cepi.rockettools.command.subcommands
 
+import kotlinx.coroutines.*
 import net.minestom.server.command.builder.Command
 import net.minestom.server.extensions.Extension
 import world.cepi.kstom.Manager
@@ -10,7 +11,6 @@ import world.cepi.rockettools.downloadURL
 import world.cepi.rockettools.messaging.MessageHandler
 import world.cepi.rockettools.messaging.Translations
 import java.lang.Exception
-import java.util.concurrent.CompletableFuture
 
 internal object RocketUpdateSubcommand : Command("update") {
 
@@ -37,6 +37,8 @@ internal object RocketUpdateSubcommand : Command("update") {
         return true
     }
 
+    private val ioScope = CoroutineScope(Dispatchers.IO + Job())
+
     init {
 
         val all = "all".literal()
@@ -52,17 +54,26 @@ internal object RocketUpdateSubcommand : Command("update") {
         }
 
         addSyntax(all) {
-            Manager.extension.extensions.forEach {
-                CompletableFuture.runAsync {
-                    if (update(it)) {
-                        MessageHandler.sendInfoMessage(sender, Translations.updateSuccess, it.origin.name)
-                    } else {
-                        MessageHandler.sendErrorMessage(sender, Translations.updateFail, it.origin.name)
+            ioScope.launch {
+                supervisorScope {
+
+                    val deferredList = ArrayList<Deferred<*>>()
+
+                    Manager.extension.extensions.forEach {
+                        deferredList.add(async {
+                            if (update(it)) {
+                                MessageHandler.sendInfoMessage(sender, Translations.updateSuccess, it.origin.name)
+                            } else {
+                                MessageHandler.sendErrorMessage(sender, Translations.updateFail, it.origin.name)
+                            }
+                        })
                     }
+
+                    deferredList.joinAll()
+
+                    MessageHandler.sendInfoMessage(sender, Translations.updateAll)
                 }
             }
-
-            MessageHandler.sendInfoMessage(sender, Translations.updateAll)
         }
     }
 
