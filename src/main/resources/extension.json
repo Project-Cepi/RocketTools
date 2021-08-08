@@ -3,7 +3,7 @@
   "name": "RocketTools",
   "version": "1.0.0",
   "meta": {
-    "downloadURL": "https://github.com/Project-Cepi/RocketTools/releases/download/latest/rocket-all.jar"
+    "downloadURL": "https://github.com/Project-Cepi/RocketTools/releases/download/latest/RocketTools.jar"
   },
   "dependencies": [
     "KStom"
