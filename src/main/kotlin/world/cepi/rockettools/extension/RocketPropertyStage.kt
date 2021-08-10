@@ -5,8 +5,8 @@ import net.kyori.adventure.text.format.TextColor
 
 enum class RocketPropertyStage(val color: TextColor) {
 
-    NONE(NamedTextColor.RED),
-    BROKEN(NamedTextColor.YELLOW),
+    NONE(NamedTextColor.YELLOW),
+    BROKEN(NamedTextColor.GOLD),
     SET(NamedTextColor.GREEN)
 
 }

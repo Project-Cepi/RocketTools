@@ -24,6 +24,8 @@ import world.cepi.rockettools.messaging.Translations
 import java.io.File
 import java.net.URL
 import java.nio.file.Path
+import kotlin.io.path.listDirectoryEntries
+import kotlin.io.path.name
 
 internal object RocketCommand : Command("rocket") {
 
@@ -49,21 +51,6 @@ internal object RocketCommand : Command("rocket") {
         val unload = "unload".literal()
         val list = "list".literal()
         val info = "info".literal()
-
-        val jarName = ArgumentType.String("jarName")
-
-        val url = ArgumentType.String("urlLink").map { url ->
-            try {
-                URL(url).toURI()
-                url
-            } catch (e: Exception) {
-                throw ArgumentSyntaxException("URL is invalid", url, 1)
-            }
-        }
-
-        url.setCallback { sender, exception ->
-            sender.sendMessage(Component.text(exception.message!!, NamedTextColor.RED))
-        }
 
         extensionArgument.setCallback { sender, exception ->
             sender.sendMessage(Component.text(exception.message!!, NamedTextColor.RED))
@@ -96,23 +83,28 @@ internal object RocketCommand : Command("rocket") {
             sender.sendMessage(
                 generateAmountPrefix(NamedTextColor.DARK_GREEN, NamedTextColor.WHITE, MinecraftServer.getExtensionManager().extensions.size)
                     .append(Component.space())
-                    .let { component ->
-                        component.append(MinecraftServer.getExtensionManager().extensions
-                            .map {
-                                Component.text(it.origin.name, RocketStageCalculator.from(it).color)
-                                    .hoverEvent(HoverEvent.showText(
-                                        Component.text("Info about ${it.origin.name}", NamedTextColor.GRAY)
-                                            .append(Component.newline())
+                    .append(MinecraftServer.getExtensionManager().extensions
+                        .map {
+                            Component.text(it.origin.name, RocketStageCalculator.from(it).color)
+                                .hoverEvent(HoverEvent.showText(
+                                    Component.text("Info about ${it.origin.name}", NamedTextColor.GRAY)
+                                        .append(Component.newline())
 
-                                    ))
-                                    .clickEvent(ClickEvent.runCommand("/rocket info ${it.origin.name}"))
-                            }
-                            .reduce { acc, textComponent ->
-                                acc
-                                    .append(Component.text(" | ", NamedTextColor.DARK_GREEN))
-                                    .append(textComponent)
-                            })
-                    }
+                                ))
+                                .clickEvent(ClickEvent.runCommand("/rocket info ${it.origin.name}"))
+                        }
+                        .reduce { acc, textComponent ->
+                            acc
+                                .append(Component.text(" | ", NamedTextColor.DARK_GREEN))
+                                .append(textComponent)
+                        })
+                    .append(Component.text(" || ", NamedTextColor.GOLD))
+                    .append(Path.of("extensions").listDirectoryEntries("*.jar.disabled").map {
+                        Component.text(it.name.dropLast(".jar.disabled".length), NamedTextColor.YELLOW)
+                    }.fold(Component.empty()) { acc, textComponent ->
+                        acc.append(textComponent)
+                    })
+
             )
         }
 
@@ -183,10 +175,6 @@ internal object RocketCommand : Command("rocket") {
                         return@let it
                     }
             )
-        }
-
-        addSyntax(download, jarName, url) {
-            downloadURL(context.get(url), Path.of("extensions", context.get(jarName) + ".jar"))
         }
 
         addSubcommands(RocketUpdateSubcommand)

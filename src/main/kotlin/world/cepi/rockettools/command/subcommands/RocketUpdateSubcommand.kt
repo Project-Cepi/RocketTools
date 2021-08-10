@@ -2,6 +2,7 @@ package world.cepi.rockettools.command.subcommands
 
 import kotlinx.coroutines.*
 import net.minestom.server.command.builder.Command
+import net.minestom.server.command.builder.arguments.ArgumentType
 import net.minestom.server.extensions.Extension
 import world.cepi.kstom.Manager
 import world.cepi.kstom.command.addSyntax
@@ -37,43 +38,69 @@ internal object RocketUpdateSubcommand : Command("update") {
         return true
     }
 
+    fun updateList(
+        extensionList: Collection<Extension>,
+        successCallback: (Extension) -> Unit,
+        failCallback: (Extension) -> Unit,
+        finishCallback: () -> Unit
+    ) {
+        ioScope.launch {
+            supervisorScope {
+
+                val deferredList = ArrayList<Deferred<*>>()
+
+                extensionList.forEach {
+                    deferredList.add(async {
+                        if (update(it)) {
+                            successCallback(it)
+                        } else {
+                            failCallback(it)
+                        }
+                    })
+                }
+
+                deferredList.joinAll()
+
+                finishCallback()
+            }
+        }
+    }
+
     private val ioScope = CoroutineScope(Dispatchers.IO + Job())
 
     init {
 
         val all = "all".literal()
+        val extension = "extension".literal()
 
-        addSyntax(RocketCommand.extensionArgument) {
-            val extension = context.get(RocketCommand.extensionArgument)
+        val extensionLoop = ArgumentType.Loop("extensions", RocketCommand.extensionArgument)
 
-            if (update(extension)) {
-                MessageHandler.sendInfoMessage(sender, Translations.updateSuccess, extension.origin.name)
-            } else {
-                MessageHandler.sendErrorMessage(sender, Translations.updateFail, extension.origin.name)
-            }
+        addSyntax(extension, extensionLoop) {
+            updateList(context[extensionLoop],
+                {
+                    MessageHandler.sendInfoMessage(sender, Translations.updateSuccess, it.origin.name)
+                },
+                {
+                    MessageHandler.sendErrorMessage(sender, Translations.updateFail, it.origin.name)
+                },
+                {
+                    MessageHandler.sendInfoMessage(sender, Translations.updateAll)
+                }
+            )
         }
 
         addSyntax(all) {
-            ioScope.launch {
-                supervisorScope {
-
-                    val deferredList = ArrayList<Deferred<*>>()
-
-                    Manager.extension.extensions.forEach {
-                        deferredList.add(async {
-                            if (update(it)) {
-                                MessageHandler.sendInfoMessage(sender, Translations.updateSuccess, it.origin.name)
-                            } else {
-                                MessageHandler.sendErrorMessage(sender, Translations.updateFail, it.origin.name)
-                            }
-                        })
-                    }
-
-                    deferredList.joinAll()
-
+            updateList(Manager.extension.extensions,
+                {
+                    MessageHandler.sendInfoMessage(sender, Translations.updateSuccess, it.origin.name)
+                },
+                {
+                    MessageHandler.sendErrorMessage(sender, Translations.updateFail, it.origin.name)
+                },
+                {
                     MessageHandler.sendInfoMessage(sender, Translations.updateAll)
                 }
-            }
+            )
         }
     }
 
