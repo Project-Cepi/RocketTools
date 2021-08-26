@@ -76,6 +76,7 @@ internal object RocketUpdateSubcommand : Command("update") {
         val extensionLoop = ArgumentType.Loop("extensions", RocketCommand.extensionArgument)
 
         addSyntax(extension, extensionLoop) {
+            MessageHandler.sendInfoMessage(sender, Translations.beginUpdating)
             updateList(context[extensionLoop],
                 {
                     MessageHandler.sendInfoMessage(sender, Translations.updateSuccess, it.origin.name)
@@ -90,6 +91,7 @@ internal object RocketUpdateSubcommand : Command("update") {
         }
 
         addSyntax(all) {
+            MessageHandler.sendInfoMessage(sender, Translations.beginUpdating)
             updateList(Manager.extension.extensions,
                 {
                     MessageHandler.sendInfoMessage(sender, Translations.updateSuccess, it.origin.name)

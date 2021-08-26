@@ -10,5 +10,6 @@ object Translations {
     const val updateSuccess = "Extension %s updated successfully!"
     const val updateFail = "Extension %s failed to update."
 
+    const val beginUpdating = "Updating extensions..."
     const val updateAll = "Finished updating all extensions!"
 }
