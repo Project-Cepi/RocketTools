@@ -1,6 +1,7 @@
 package world.cepi.rockettools.command.subcommands
 
 import kotlinx.coroutines.*
+import net.minestom.server.command.CommandSender
 import net.minestom.server.command.builder.Command
 import net.minestom.server.command.builder.arguments.ArgumentType
 import net.minestom.server.extensions.Extension
@@ -40,30 +41,50 @@ internal object RocketUpdateSubcommand : Command("update") {
 
     fun updateList(
         extensionList: Collection<Extension>,
-        successCallback: (Extension) -> Unit,
         failCallback: (Extension) -> Unit,
-        finishCallback: () -> Unit
+        finishCallback: (Int) -> Unit
     ) {
         ioScope.launch {
             supervisorScope {
 
                 val deferredList = ArrayList<Deferred<*>>()
 
+                var failedExtensions = 0
+
                 extensionList.forEach {
                     deferredList.add(async {
-                        if (update(it)) {
-                            successCallback(it)
-                        } else {
+                        if (!update(it)) {
                             failCallback(it)
+                            failedExtensions++
                         }
                     })
                 }
 
                 deferredList.joinAll()
 
-                finishCallback()
+                finishCallback(failedExtensions)
             }
         }
+    }
+
+    fun updateToSender(extensionList: Collection<Extension>, sender: CommandSender) {
+        updateList(extensionList,
+            {
+                MessageHandler.sendErrorMessage(sender, Translations.updateFail, it.origin.name)
+            },
+
+            finishCallback@ {
+                if (it == 0) {
+                    MessageHandler.sendInfoMessage(sender, Translations.updateAll)
+                    return@finishCallback
+                }
+
+                MessageHandler.sendInfoMessage(
+                    sender, Translations.updateNumber,
+                    Manager.extension.extensions.size - it, Manager.extension.extensions.size
+                )
+            }
+        )
     }
 
     private val ioScope = CoroutineScope(Dispatchers.IO + Job())
@@ -77,32 +98,12 @@ internal object RocketUpdateSubcommand : Command("update") {
 
         addSyntax(extension, extensionLoop) {
             MessageHandler.sendInfoMessage(sender, Translations.beginUpdating)
-            updateList(context[extensionLoop],
-                {
-                    MessageHandler.sendInfoMessage(sender, Translations.updateSuccess, it.origin.name)
-                },
-                {
-                    MessageHandler.sendErrorMessage(sender, Translations.updateFail, it.origin.name)
-                },
-                {
-                    MessageHandler.sendInfoMessage(sender, Translations.updateAll)
-                }
-            )
+            updateToSender(context[extensionLoop], sender)
         }
 
         addSyntax(all) {
             MessageHandler.sendInfoMessage(sender, Translations.beginUpdating)
-            updateList(Manager.extension.extensions,
-                {
-                    MessageHandler.sendInfoMessage(sender, Translations.updateSuccess, it.origin.name)
-                },
-                {
-                    MessageHandler.sendErrorMessage(sender, Translations.updateFail, it.origin.name)
-                },
-                {
-                    MessageHandler.sendInfoMessage(sender, Translations.updateAll)
-                }
-            )
+            updateToSender(Manager.extension.extensions, sender)
         }
     }
 
