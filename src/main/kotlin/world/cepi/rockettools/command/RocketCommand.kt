@@ -16,6 +16,7 @@ import world.cepi.kstom.command.addSyntax
 import world.cepi.kstom.command.arguments.SuggestionIgnoreOption
 import world.cepi.kstom.command.arguments.literal
 import world.cepi.kstom.command.arguments.suggest
+import world.cepi.rockettools.Rocket
 import world.cepi.rockettools.command.subcommands.RocketUpdateSubcommand
 import world.cepi.rockettools.downloadURL
 import world.cepi.rockettools.extension.RocketStageCalculator
@@ -62,7 +63,7 @@ internal object RocketCommand : Command("rocket") {
 
             MessageHandler.sendInfoMessage(sender, Translations.reloadProgress, extension.origin.name)
 
-            Manager.extension.reload(extension.origin.name)
+            Rocket.reload(extension)
 
             MessageHandler.sendInfoMessage(sender, Translations.reloadFinished, extension.origin.name)
         }
@@ -73,7 +74,7 @@ internal object RocketCommand : Command("rocket") {
 
             MessageHandler.sendInfoMessage(sender, Translations.unloadProgress, extension.origin.name)
 
-            Manager.extension.unloadExtension(extension.origin.name)
+            Rocket.unload(extension)
 
             MessageHandler.sendInfoMessage(sender, Translations.unloadFinished, extension.origin.name)
 
