@@ -31,16 +31,11 @@ object HotReloading {
             key = watchService.take() ?: continue
 
             forLoop@ for (event in key.pollEvents()) {
-
-                println(event.context() as Path)
-
-                // File must end with .jar
+                // File must end with .jar TODO ???? doesnt work
                 if (!(event.context() as Path).endsWith(".jar")) {
                     key.reset()
                     continue@forLoop
                 }
-
-                println("jar check passed")
 
                 val foundExtension = Manager.extension.extensions.firstOrNull {
                     it.origin.originalJar?.name == (event.context() as? Path)?.name
