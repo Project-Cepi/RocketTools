@@ -31,8 +31,8 @@ object HotReloading {
             key = watchService.take() ?: continue
 
             forLoop@ for (event in key.pollEvents()) {
-                // File must end with .jar TODO ???? doesnt work
-                if (!(event.context() as Path).endsWith(".jar")) {
+                // File must end with .jar
+                if (!(event.context() as Path).name.endsWith(".jar")) {
                     key.reset()
                     continue@forLoop
                 }

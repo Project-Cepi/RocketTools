@@ -21,7 +21,7 @@ class RocketTools : Extension() {
 
         HotReloading.boot()
 
-        logger.info("[RocketTools] has been gaming!")
+        logger.info("[RocketTools] has been enabled!")
     }
 
     override fun terminate() {
