@@ -38,7 +38,7 @@ dependencies {
     compileOnly("com.github.Minestom:Minestom:2ef8e957a0")
 
     // Use kotlinx serialization
-    compileOnly("org.jetbrains.kotlinx", "kotlinx-serialization-json", "1.2.2")
+    compileOnly("org.jetbrains.kotlinx", "kotlinx-serialization-json", "1.3.0")
 
     // Add support for kotlinx courotines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2")
