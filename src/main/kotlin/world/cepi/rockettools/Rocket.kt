@@ -6,6 +6,8 @@ import java.io.File
 
 object Rocket {
 
+    const val downloadURL = "downloadURL"
+
     fun reload(extension: Extension) {
         Manager.extension.reload(extension.origin.name)
     }

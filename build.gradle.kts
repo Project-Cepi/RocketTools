@@ -44,7 +44,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2")
 
     // implement KStom
-    compileOnly("com.github.Project-Cepi:KStom:04d5c6a4f4")
+    compileOnly("com.github.Project-Cepi:KStom:e3ddf8f437")
 }
 
 tasks.withType<Test> {

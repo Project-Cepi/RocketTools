@@ -2,19 +2,21 @@ package world.cepi.rockettools.command.subcommands
 
 import kotlinx.coroutines.*
 import net.minestom.server.command.CommandSender
-import net.minestom.server.command.builder.Command
 import net.minestom.server.command.builder.arguments.ArgumentType
 import net.minestom.server.extensions.Extension
 import world.cepi.kstom.Manager
-import world.cepi.kstom.command.addSyntax
 import world.cepi.kstom.command.arguments.literal
-import world.cepi.rockettools.command.RocketCommand
+import world.cepi.kstom.command.kommand.Kommand
+import world.cepi.rockettools.Rocket
+import world.cepi.rockettools.command.RocketArguments
 import world.cepi.rockettools.downloadURL
 import world.cepi.rockettools.messaging.MessageHandler
 import world.cepi.rockettools.messaging.Translations
 import java.lang.Exception
 
-internal object RocketUpdateSubcommand : Command("update") {
+internal object RocketUpdateSubcommand : Kommand({
+
+    val ioScope = CoroutineScope(Dispatchers.IO + Job())
 
     /**
      * Updates an extension
@@ -25,11 +27,11 @@ internal object RocketUpdateSubcommand : Command("update") {
      */
     fun update(extension: Extension): Boolean {
         if (extension.origin.originalJar == null) return false
-        if (extension.origin.meta.get(RocketCommand.downloadURL)?.asString == null) return false
+        if (extension.origin.meta.get(Rocket.downloadURL)?.asString == null) return false
 
         try {
             downloadURL(
-                extension.origin.meta.get(RocketCommand.downloadURL).asString!!,
+                extension.origin.meta.get(Rocket.downloadURL).asString!!,
                 extension.origin.originalJar!!.toPath()
             )
         } catch (exception: Exception) {
@@ -87,24 +89,20 @@ internal object RocketUpdateSubcommand : Command("update") {
         )
     }
 
-    private val ioScope = CoroutineScope(Dispatchers.IO + Job())
+    val all = "all".literal()
+    val extension = "extension".literal()
 
-    init {
+    val extensionLoop = ArgumentType.Loop("extensions", RocketArguments.extensionArgument)
 
-        val all = "all".literal()
-        val extension = "extension".literal()
-
-        val extensionLoop = ArgumentType.Loop("extensions", RocketCommand.extensionArgument)
-
-        addSyntax(extension, extensionLoop) {
-            MessageHandler.sendInfoMessage(sender, Translations.beginUpdating)
-            updateToSender(context[extensionLoop], sender)
-        }
-
-        addSyntax(all) {
-            MessageHandler.sendInfoMessage(sender, Translations.beginUpdating)
-            updateToSender(Manager.extension.extensions, sender)
-        }
+    syntax(extension, extensionLoop) {
+        MessageHandler.sendInfoMessage(sender, Translations.beginUpdating)
+        updateToSender(!extensionLoop, sender)
     }
 
-}
+    syntax(all) {
+        MessageHandler.sendInfoMessage(sender, Translations.beginUpdating)
+        updateToSender(Manager.extension.extensions, sender)
+    }
+
+
+}, "update")

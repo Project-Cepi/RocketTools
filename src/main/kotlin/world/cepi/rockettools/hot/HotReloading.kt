@@ -60,7 +60,6 @@ object HotReloading {
                         logger.info("Extension ${foundExtension.origin.name} reloaded.")
                     }
                     StandardWatchEventKinds.ENTRY_CREATE -> {
-
                         val file = (event.context() as Path).toFile()
 
                         Rocket.load(file)
