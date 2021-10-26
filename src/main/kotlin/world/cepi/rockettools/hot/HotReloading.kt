@@ -7,6 +7,7 @@ import world.cepi.rockettools.Rocket
 import world.cepi.rockettools.messaging.MessageHandler
 import world.cepi.rockettools.messaging.Translations
 import java.nio.file.*
+import java.time.Duration
 import kotlin.concurrent.thread
 import kotlin.io.path.name
 
@@ -60,13 +61,15 @@ object HotReloading {
                         logger.info("Extension ${foundExtension.origin.name} reloaded.")
                     }
                     StandardWatchEventKinds.ENTRY_CREATE -> {
-                        val file = (event.context() as Path).toFile()
+                        Manager.scheduler.buildTask {
+                            val file = (event.context() as? Path)?.toFile() ?: return@buildTask
 
-                        Rocket.load(file)
+                            Rocket.load(file)
 
-                        MessageHandler.sendInfoMessage(Audiences.players(), Translations.hotLoad, file)
+                            MessageHandler.sendInfoMessage(Audiences.players(), Translations.hotLoad, file)
 
-                        logger.info("New extension loaded.")
+                            logger.info("New extension loaded.")
+                        }.delay(Duration.ofSeconds(1)).schedule()
                     }
                 }
             }
