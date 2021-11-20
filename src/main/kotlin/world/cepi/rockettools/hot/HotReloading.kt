@@ -1,6 +1,7 @@
 package world.cepi.rockettools.hot
 
 import net.minestom.server.adventure.audience.Audiences
+import net.minestom.server.utils.time.TimeUnit
 import org.slf4j.LoggerFactory
 import world.cepi.kstom.Manager
 import world.cepi.rockettools.Rocket
@@ -25,15 +26,13 @@ object HotReloading {
             StandardWatchEventKinds.ENTRY_CREATE
         )
 
-        var key: WatchKey
         while (running) {
 
-            key = watchService.take() ?: continue
+            val key = watchService.take() ?: continue
 
             forLoop@ for (event in key.pollEvents()) {
                 // File must end with .jar
                 if (!(event.context() as Path).name.endsWith(".jar")) {
-                    key.reset()
                     continue@forLoop
                 }
 
@@ -45,7 +44,6 @@ object HotReloading {
                     StandardWatchEventKinds.ENTRY_MODIFY -> {
 
                         if (foundExtension == null) {
-                            key.reset()
                             continue@forLoop
                         }
 
@@ -59,19 +57,22 @@ object HotReloading {
 
                         logger.info("Extension ${foundExtension.origin.name} reloaded.")
                     }
-                    StandardWatchEventKinds.ENTRY_CREATE -> {
-                        val file = (event.context() as Path).toFile()
+                    StandardWatchEventKinds.ENTRY_CREATE -> Manager.scheduler.buildTask {
 
-                        Rocket.load(file)
+                        val fileName = (event.context() as Path).fileName
+                        val file = Path.of("./extensions/$fileName").toFile()
 
-                        MessageHandler.sendInfoMessage(Audiences.players(), Translations.hotLoad, file)
-
-                        logger.info("New extension loaded.")
-                    }
+                        Manager.extension.extensions.firstOrNull { it.origin.originalJar?.name == file.name }
+                            ?.let {
+                                Rocket.unload(it)
+                                Rocket.load(file)
+                                MessageHandler.sendInfoMessage(Audiences.all(), Translations.hotLoad, fileName)
+                            }
+                    }.delay(5, TimeUnit.SERVER_TICK).schedule()
                 }
             }
 
-            key.reset()
+            running = key.reset()
         }
     }
 
