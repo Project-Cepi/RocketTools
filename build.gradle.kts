@@ -4,7 +4,7 @@ plugins {
     // Apply the Kotlin JVM plugin to add support for Kotlin.
     kotlin("jvm") version "1.9.24"
     id("org.jetbrains.dokka") version "1.9.20"
-    kotlin("plugin.serialization") version "1.9.23"
+    kotlin("plugin.serialization") version "1.9.24"
     `maven-publish`
 
     // Apply the application plugin to add support for building a jar
